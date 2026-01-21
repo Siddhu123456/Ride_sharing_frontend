@@ -1,0 +1,253 @@
+/* src/features/auth/Login.css */
+
+/* --- 1. FULL SCREEN LAYOUT --- */
+.rydo-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+}
+
+/* --- 2. LEFT SIDE: NYC VISUAL --- */
+.nyc-visual-pane {
+  flex: 1.2;
+  /* Darker overlay for better text contrast */
+  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+              url('https://images.unsplash.com/photo-1464851707681-f9d5fdaccea8?q=80&w=2560&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  padding: 60px;
+}
+
+.brand-logo {
+  color: #ffffff;
+  font-size: 4rem;
+  font-weight: 900;
+  letter-spacing: -3px;
+  margin-bottom: 10px;
+}
+
+.hero-text {
+  color: #ffffff;
+  font-size: 1.2rem;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+/* --- 3. RIGHT SIDE: FORM PANE --- */
+.form-pane {
+  flex: 0.8;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.form-content-box {
+  width: 100%;
+  max-width: 400px; /* Slightly narrower for login focus */
+}
+
+.form-intro h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+  color: #000;
+}
+
+.form-intro p {
+  color: #666;
+  margin-bottom: 32px;
+  font-size: 0.95rem;
+}
+
+/* --- 4. FORM INPUTS (COLOR FIX APPLIED) --- */
+.registration-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #111;
+  letter-spacing: 1px;
+}
+
+/* ✅ THE FIX: Force text color to black */
+input, select {
+  height: 54px;
+  background: #f7f7f7;
+  border: 1px solid #eee;
+  padding: 0 16px;
+  font-size: 1rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+  
+  /* Text Color Fixes */
+  color: #111111 !important; 
+  caret-color: #000000;
+}
+
+/* Placeholder styling */
+input::placeholder {
+  color: #888888;
+  opacity: 1;
+}
+
+/* Input Focus State */
+input:focus, select:focus {
+  outline: none;
+  border-color: #000;
+  background: #fff;
+}
+
+/* Browser Autofill Override (keeps background gray, text black) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #111111 !important;
+  -webkit-box-shadow: 0 0 0 30px #f7f7f7 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* --- 5. BUTTONS --- */
+.rydo-submit-btn {
+  width: 100%;
+  height: 60px;
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s;
+}
+
+.rydo-submit-btn:hover {
+  background: #222222;
+}
+
+.rydo-submit-btn:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+/* --- 6. ROLE SELECTION (STEP 2) --- */
+.role-selection-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 10px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.role-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 72px;
+  padding: 0 24px;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.role-card:hover {
+  border-color: #000;
+  background: #fafafa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.role-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111;
+  text-transform: capitalize;
+}
+
+.role-arrow {
+  font-size: 1.2rem;
+  color: #bbb;
+  transition: color 0.2s;
+}
+
+.role-card:hover .role-arrow {
+  color: #000;
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 20px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.back-link:hover {
+  color: #000;
+}
+
+/* --- 7. UTILS & FOOTER --- */
+.auth-alert {
+  padding: 15px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  text-align: left;
+}
+.error { background: #fee2e2; color: #b91c1c; }
+
+.form-footer-link {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.form-footer-link a {
+  color: #000;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 8. RESPONSIVE --- */
+@media (max-width: 1024px) {
+  .nyc-visual-pane { display: none; }
+  .form-pane { flex: 1; }
+  .form-content-box { max-width: 100%; padding: 0 20px; }
+}

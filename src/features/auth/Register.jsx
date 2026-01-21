@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { registerUser, fetchCountries } from '../../store/authslice';
 import './Register.css';
 
@@ -12,7 +13,7 @@ const Register = () => {
     email: '',
     phone: '',
     gender: 'MALE',
-    country_code: '', 
+    country_code: '',
     password: '',
   });
 
@@ -61,23 +62,23 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="registration-form">
             <div className="form-row">
               <label>Full Name</label>
-              <input 
-                name="full_name" 
-                type="text" 
-                placeholder="Enter your full name" 
-                onChange={handleChange} 
-                required 
+              <input
+                name="full_name"
+                type="text"
+                placeholder="Enter your full name"
+                onChange={handleChange}
+                required
               />
             </div>
 
             <div className="form-row">
               <label>Email Address</label>
-              <input 
-                name="email" 
-                type="email" 
-                placeholder="email@example.com" 
-                onChange={handleChange} 
-                required 
+              <input
+                name="email"
+                type="email"
+                placeholder="email@example.com"
+                onChange={handleChange}
+                required
               />
             </div>
 
@@ -95,12 +96,12 @@ const Register = () => {
               </div>
               <div className="form-row phone-box">
                 <label>Mobile Number</label>
-                <input 
-                  name="phone" 
-                  type="tel" 
-                  placeholder="555-0123" 
-                  onChange={handleChange} 
-                  required 
+                <input
+                  name="phone"
+                  type="tel"
+                  placeholder="555-0123"
+                  onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -116,12 +117,12 @@ const Register = () => {
               </div>
               <div className="form-row">
                 <label>Password</label>
-                <input 
-                  name="password" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  onChange={handleChange} 
-                  required 
+                <input
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -133,7 +134,7 @@ const Register = () => {
           </form>
 
           <div className="form-footer-link">
-            Already have an account? <a href="/login">Log in</a>
+            Already have an account? <Link to="/login">Log in</Link>
           </div>
         </div>
       </div>
