@@ -1,20 +1,31 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Register from './features/auth/Register.jsx';
-import Login from "./features/auth/Login.jsx";
-import './App.css';
+import Login from './features/auth/Login.jsx';
+
+// Admin Imports
+import AdminLayout from './features/admin/AdminLayout.jsx';
+import AdminLogin from './features/admin/AdminLogin.jsx'; // Import the new page
+import TenantManager from './features/admin/TenantManager.jsx';
 
 function App() {
   return (
     <>
       <Routes>
-        {/* Redirect root "/" to "/register" automatically */}
         <Route path="/" element={<Navigate to="/register" replace />} />
         
-        {/* Auth Routes */}
+        {/* User Auth Routes */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         
-        {/* Catch-all for 404s */}
+        {/* Admin Public Route */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* Admin Protected Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+           <Route index element={<Navigate to="tenants" replace />} />
+           <Route path="tenants" element={<TenantManager />} />
+        </Route>
+
         <Route path="*" element={<Navigate to="/register" replace />} />
       </Routes>
     </>
