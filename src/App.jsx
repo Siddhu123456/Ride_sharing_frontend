@@ -6,6 +6,10 @@ import Login from './features/auth/Login.jsx';
 import AdminLayout from './features/admin/AdminLayout.jsx';
 import AdminLogin from './features/admin/AdminLogin.jsx'; // Import the new page
 import TenantManager from './features/admin/TenantManager.jsx';
+import FleetRegistration from './features/fleet/FleetRegistration.jsx';
+
+
+
 
 function App() {
   return (
@@ -25,6 +29,8 @@ function App() {
            <Route index element={<Navigate to="tenants" replace />} />
            <Route path="tenants" element={<TenantManager />} />
         </Route>
+
+        <Route path="/fleet-registration" element={<FleetRegistration />} />
 
         <Route path="*" element={<Navigate to="/register" replace />} />
       </Routes>
