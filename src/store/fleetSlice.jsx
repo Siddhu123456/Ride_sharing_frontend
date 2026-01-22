@@ -3,7 +3,6 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/fleet-owner';
 
-// Helper for Auth Headers
 const getHeaders = () => {
   const token = localStorage.getItem('token'); 
   return { 
@@ -16,24 +15,38 @@ const getHeaders = () => {
 
 /* --- THUNKS --- */
 
-// 1. Apply for Fleet
-export const applyForFleet = createAsyncThunk(
-  'fleet/apply',
-  async ({ tenantId, fleetName }, { rejectWithValue }) => {
-    try {
-      const response = await axios.post(
-        `${API_URL}/apply`, 
-        { tenant_id: parseInt(tenantId), fleet_name: fleetName }, 
-        getHeaders()
-      );
-      return response.data; // Returns fleet object
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.detail || 'Application failed');
-    }
+// 1. Check Fleet Status (Existing)
+export const checkFleetStatus = createAsyncThunk('fleet/checkStatus', async (_, { rejectWithValue }) => {
+  try {
+    const response = await axios.get(`${API_URL}/me`, getHeaders());
+    return response.data; 
+  } catch (err) {
+    if (err.response && err.response.status === 404) return null;
+    return rejectWithValue(err.response?.data?.detail);
   }
-);
+});
 
-// 2. Fetch Document Status
+// 2. Fetch Tenants (Existing)
+export const fetchFleetTenants = createAsyncThunk('fleet/fetchTenants', async (_, { rejectWithValue }) => {
+  try {
+    const response = await axios.get(`${API_URL}/tenants`, getHeaders());
+    return response.data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.detail);
+  }
+});
+
+// 3. Apply for Fleet (Existing)
+export const applyForFleet = createAsyncThunk('fleet/apply', async ({ tenantId, fleetName }, { rejectWithValue }) => {
+  try {
+    const response = await axios.post(`${API_URL}/apply`, { tenant_id: parseInt(tenantId), fleet_name: fleetName }, getHeaders());
+    return response.data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.detail);
+  }
+});
+
+// ✅ 4. Fetch Document Status (NEW)
 export const fetchDocStatus = createAsyncThunk(
   'fleet/fetchDocStatus',
   async (fleetId, { rejectWithValue }) => {
@@ -49,7 +62,7 @@ export const fetchDocStatus = createAsyncThunk(
   }
 );
 
-// 3. Upload Document
+// ✅ 5. Upload Document (NEW)
 export const uploadFleetDoc = createAsyncThunk(
   'fleet/uploadDoc',
   async ({ fleetId, docData }, { rejectWithValue, dispatch }) => {
@@ -59,7 +72,7 @@ export const uploadFleetDoc = createAsyncThunk(
         docData, 
         getHeaders()
       );
-      // Refresh status after upload
+      // Immediately refresh status to update UI
       dispatch(fetchDocStatus(fleetId));
       return response.data;
     } catch (err) {
@@ -72,49 +85,64 @@ export const uploadFleetDoc = createAsyncThunk(
 const fleetSlice = createSlice({
   name: 'fleet',
   initialState: {
-    fleet: null, // Stores current fleet details
+    fleet: null, 
+    availableTenants: [],
+    hasExistingFleet: null,
+    
+    // ✅ Document State
     docStatus: {
       uploaded: [],
       missing: [],
       all_uploaded: false,
       all_approved: false
     },
+    
     loading: false,
     error: null,
     successMsg: null,
-    step: 1, // 1: Apply Form, 2: Doc Uploads, 3: Success
+    step: 1, 
   },
   reducers: {
     resetFleetState: (state) => {
       state.loading = false;
       state.error = null;
       state.successMsg = null;
+      state.step = 1;
     }
   },
   extraReducers: (builder) => {
     builder
+      // Check Status
+      .addCase(checkFleetStatus.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.fleet = action.payload;
+          state.hasExistingFleet = true;
+          state.step = 2; // ✅ If fleet exists, go to docs immediately (handled in component)
+        } else {
+          state.fleet = null;
+          state.hasExistingFleet = false;
+        }
+      })
+      
+      // Fetch Tenants
+      .addCase(fetchFleetTenants.fulfilled, (state, action) => { state.availableTenants = action.payload; })
+
       // Apply
       .addCase(applyForFleet.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(applyForFleet.fulfilled, (state, action) => {
         state.loading = false;
         state.fleet = action.payload;
-        state.step = 2; // Move to docs
+        state.hasExistingFleet = true;
+        state.step = 2; // ✅ Move to Step 2
       })
-      .addCase(applyForFleet.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(applyForFleet.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
 
-      // Fetch Doc Status
+      // ✅ Fetch Doc Status
       .addCase(fetchDocStatus.fulfilled, (state, action) => {
         state.docStatus = action.payload;
-        // If all uploaded, maybe move to step 3 or show success message
-        if (action.payload.all_uploaded) {
-            state.successMsg = "All documents uploaded. Pending verification.";
-        }
       })
 
-      // Upload Doc
+      // ✅ Upload Doc
       .addCase(uploadFleetDoc.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(uploadFleetDoc.fulfilled, (state) => {
         state.loading = false;

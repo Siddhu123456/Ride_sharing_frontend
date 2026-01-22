@@ -1,0 +1,137 @@
+/* src/features/fleet/VehicleOnboarding.css */
+
+/* Imports */
+@import '../admin/AdminShared.css'; /* Reuse if available, else standard styles apply */
+
+.back-link {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+  display: block;
+}
+.back-link:hover { color: #000; text-decoration: underline; }
+
+.split-flex-row {
+  display: flex;
+  gap: 16px;
+}
+.split-flex-row .form-row {
+  flex: 1;
+}
+
+/* Document Cards */
+.docs-container {
+  margin-top: 20px;
+}
+
+.docs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doc-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.doc-card.completed {
+  background: #f0fdf4;
+  border-color: #dcfce7;
+}
+
+.doc-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #111;
+}
+
+.doc-status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 4px;
+  display: block;
+}
+
+.doc-status.pending { color: #d97706; }
+.doc-status.ok { color: #166534; }
+
+.doc-action-btn {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.doc-action-btn:hover { background: #333; }
+
+/* Success Box */
+.success-box {
+  margin-top: 30px;
+  padding: 24px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  text-align: center;
+}
+.success-box h3 {
+  margin: 0 0 16px 0;
+  color: #111;
+}
+
+/* Modal Reuse */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  backdrop-filter: blur(2px);
+}
+
+.modal-box {
+  background: #fff;
+  padding: 30px;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.fake-file-input {
+  height: 48px;
+  background: #f7f7f7;
+  border: 1px dashed #ccc;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 0.9rem;
+  color: #666;
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.rydo-btn-pri { height: 48px; background: #000; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; }
+.rydo-btn-sec { height: 48px; background: #fff; color: #000; border: 1px solid #ddd; border-radius: 4px; font-weight: 700; cursor: pointer; }

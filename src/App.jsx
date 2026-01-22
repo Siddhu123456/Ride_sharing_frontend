@@ -7,6 +7,9 @@ import AdminLayout from './features/admin/AdminLayout.jsx';
 import AdminLogin from './features/admin/AdminLogin.jsx'; // Import the new page
 import TenantManager from './features/admin/TenantManager.jsx';
 import FleetRegistration from './features/fleet/FleetRegistration.jsx';
+import VehicleOnboarding from './features/fleet/VehicleOnboarding.jsx';
+
+// ...
 
 
 
@@ -31,7 +34,8 @@ function App() {
         </Route>
 
         <Route path="/fleet-registration" element={<FleetRegistration />} />
-
+        <Route path="/fleet/add-vehicle" element={<VehicleOnboarding />} />
+        
         <Route path="*" element={<Navigate to="/register" replace />} />
       </Routes>
     </>

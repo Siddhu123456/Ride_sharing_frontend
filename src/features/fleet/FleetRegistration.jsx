@@ -1,37 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { applyForFleet, uploadFleetDoc, fetchDocStatus } from '../../store/fleetSlice';
-import { fetchTenants } from '../../store/adminSlice'; // Reuse tenant fetching
+import { useNavigate } from 'react-router-dom';
+import { 
+  applyForFleet, 
+  checkFleetStatus, 
+  fetchFleetTenants,
+  fetchDocStatus,    // ✅ Import
+  uploadFleetDoc     // ✅ Import
+} from '../../store/fleetSlice';
 import './Fleet.css';
 
-const REQUIRED_DOCS = [
-  { type: 'AADHAAR', label: 'Aadhaar Card' },
-  { type: 'PAN', label: 'PAN Card' },
-  { type: 'GST_CERTIFICATE', label: 'GST Certificate' },
-  { type: 'BUSINESS_REGISTRATION', label: 'Business Registration' }
+// Define the required docs constant for mapping
+const DOC_TYPES = [
+  { key: 'AADHAAR', label: 'Aadhaar Card' },
+  { key: 'PAN', label: 'PAN Card' },
+  { key: 'GST_CERTIFICATE', label: 'GST Certificate' },
+  { key: 'BUSINESS_REGISTRATION', label: 'Business Registration' }
 ];
 
 const FleetRegistration = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   
-  // Redux State
-  const { fleet, docStatus, loading, error, successMsg, step } = useSelector((state) => state.fleet);
-  const { tenants } = useSelector((state) => state.admin);
+  const { 
+    fleet, availableTenants, hasExistingFleet, docStatus, // ✅ Get docStatus
+    loading, error, successMsg, step 
+  } = useSelector((state) => state.fleet);
 
-  // Local State
+  // Form States
   const [formData, setFormData] = useState({ tenant_id: '', fleet_name: '' });
-  const [uploadData, setUploadData] = useState({ 
-    document_type: '', 
-    document_number: '', 
-    file_url: 'https://example.com/mock-doc.pdf' // Mock URL for backend
-  });
-  const [activeDocType, setActiveDocType] = useState(null);
+  
+  // ✅ Upload Modal State
+  const [activeDoc, setActiveDoc] = useState(null); // Which doc we are uploading
+  const [docInput, setDocInput] = useState({ number: '', file_url: '' });
 
+  // 1. Auth Check
   useEffect(() => {
-    dispatch(fetchTenants()); // Load tenants for dropdown
-  }, [dispatch]);
+    const token = localStorage.getItem('token');
+    if (!token) navigate('/login');
+    else dispatch(checkFleetStatus());
+  }, [dispatch, navigate]);
 
-  // Step 1: Submit Application
+  // 2. Load Tenants if no fleet
+  useEffect(() => {
+    if (hasExistingFleet === false) dispatch(fetchFleetTenants());
+  }, [hasExistingFleet, dispatch]);
+
+  // 3. ✅ Load Doc Status if fleet exists
+  useEffect(() => {
+    if (fleet && fleet.fleet_id) {
+      dispatch(fetchDocStatus(fleet.fleet_id));
+    }
+  }, [fleet, dispatch]);
+
+  // --- HANDLERS ---
+
   const handleApply = (e) => {
     e.preventDefault();
     dispatch(applyForFleet({
@@ -40,38 +63,45 @@ const FleetRegistration = () => {
     }));
   };
 
-  // Step 2: Handle Document Upload
-  const handleUpload = async (e) => {
+  const handleOpenUpload = (docKey) => {
+    setActiveDoc(docKey);
+    // Mocking file URL for now as per requirement
+    setDocInput({ number: '', file_url: `https://s3.aws.com/uploads/${docKey}_${Date.now()}.pdf` });
+  };
+
+  const handleUploadSubmit = async (e) => {
     e.preventDefault();
     if (!fleet) return;
 
     await dispatch(uploadFleetDoc({
       fleetId: fleet.fleet_id,
       docData: {
-        document_type: uploadData.document_type,
-        document_number: uploadData.document_number,
-        file_url: uploadData.file_url // In real app, upload file first, get URL
+        document_type: activeDoc,
+        document_number: docInput.number,
+        file_url: docInput.file_url
       }
     }));
-    
-    // Close modal/form on success
-    setActiveDocType(null);
-    setUploadData({ ...uploadData, document_number: '' });
+    setActiveDoc(null); // Close modal on success
   };
 
-  const openUploadForm = (type) => {
-    setUploadData({ ...uploadData, document_type: type });
-    setActiveDocType(type);
+  const handleFinish = () => {
+    navigate('/dashboard');
   };
 
-  // Check if a specific doc is uploaded
-  const isUploaded = (type) => {
-    return docStatus.uploaded.some(d => d.document_type === type);
+  // Helper to check if a specific doc type is uploaded
+  const isUploaded = (key) => {
+    return docStatus.uploaded.some(d => d.document_type === key);
   };
+
+  // --- RENDER ---
+
+  if (loading && hasExistingFleet === null) {
+    return <div className="rydo-layout"><div className="form-pane">Loading...</div></div>;
+  }
 
   return (
     <div className="rydo-layout">
-      {/* LEFT SIDE: VISUAL */}
+      {/* Visual Pane */}
       <div className="nyc-visual-pane" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=2560&auto=format&fit=crop)'}}>
         <div className="hero-content">
           <h1 className="brand-logo">Rydo<span className="brand-badge">FLEET</span></h1>
@@ -79,74 +109,64 @@ const FleetRegistration = () => {
         </div>
       </div>
 
-      {/* RIGHT SIDE: FORMS */}
+      {/* Form Pane */}
       <div className="form-pane">
-        <div className="form-content-box wide">
+        <div className="form-content-box wide"> {/* 'wide' class for doc cards */}
           
-          {/* HEADER */}
           <header className="form-intro">
             <h2>{step === 1 ? 'Partner Application' : 'Verification Documents'}</h2>
-            <p>{step === 1 ? 'Start your journey as a Fleet Owner.' : 'Upload required documents to activate your account.'}</p>
+            <p>{step === 1 ? 'Select your operating region.' : 'Please upload the following documents.'}</p>
           </header>
 
           {error && <div className="auth-alert error">{error}</div>}
           {successMsg && <div className="auth-alert success">{successMsg}</div>}
 
-          {/* --- STEP 1: APPLY FORM --- */}
-          {step === 1 && (
+          {/* --- STEP 1: APPLY --- */}
+          {step === 1 && !hasExistingFleet && (
             <form onSubmit={handleApply} className="registration-form">
               <div className="form-row">
-                <label>Operating City (Tenant)</label>
+                <label>Operating City</label>
                 <select 
                   value={formData.tenant_id} 
                   onChange={(e) => setFormData({...formData, tenant_id: e.target.value})}
                   required
                 >
                   <option value="">Select City...</option>
-                  {tenants.map(t => (
-                    <option key={t.tenant_id} value={t.tenant_id}>{t.name}</option>
-                  ))}
+                  {availableTenants.length > 0 ? availableTenants.map(t => (
+                    <option key={t.tenant_id} value={t.tenant_id}>{t.name} ({t.default_currency})</option>
+                  )) : <option disabled>No cities available</option>}
                 </select>
               </div>
-
               <div className="form-row">
                 <label>Fleet / Business Name</label>
                 <input 
-                  type="text" 
-                  placeholder="e.g. Metro Cabs LLC" 
-                  value={formData.fleet_name}
-                  onChange={(e) => setFormData({...formData, fleet_name: e.target.value})}
-                  required 
+                  type="text" value={formData.fleet_name} 
+                  onChange={(e) => setFormData({...formData, fleet_name: e.target.value})} required 
                 />
               </div>
-
               <button type="submit" className="rydo-submit-btn" disabled={loading}>
                 {loading ? 'Processing...' : 'Submit Application'}
               </button>
             </form>
           )}
 
-          {/* --- STEP 2: DOCUMENT UPLOADS --- */}
-          {step === 2 && (
-            <div className="fleet-docs-container">
+          {/* --- STEP 2: DOCUMENTS --- */}
+          {(step === 2 || hasExistingFleet) && (
+            <div className="fleet-step-2">
               
-              <div className="docs-grid">
-                {REQUIRED_DOCS.map((doc) => {
-                  const uploaded = isUploaded(doc.type);
+              <div className="docs-list">
+                {DOC_TYPES.map((doc) => {
+                  const uploaded = isUploaded(doc.key);
                   return (
-                    <div key={doc.type} className={`doc-card ${uploaded ? 'done' : 'pending'}`}>
+                    <div key={doc.key} className={`doc-card ${uploaded ? 'completed' : ''}`}>
                       <div className="doc-info">
-                        <span className="doc-label">{doc.label}</span>
-                        <span className={`doc-status ${uploaded ? 'success' : 'warn'}`}>
+                        <span className="doc-name">{doc.label}</span>
+                        <span className={`doc-status ${uploaded ? 'ok' : 'pending'}`}>
                           {uploaded ? '✓ Uploaded' : 'Pending'}
                         </span>
                       </div>
-                      
                       {!uploaded && (
-                        <button 
-                          className="doc-upload-btn"
-                          onClick={() => openUploadForm(doc.type)}
-                        >
+                        <button className="doc-action-btn" onClick={() => handleOpenUpload(doc.key)}>
                           Upload
                         </button>
                       )}
@@ -155,46 +175,45 @@ const FleetRegistration = () => {
                 })}
               </div>
 
-              {/* UPLOAD MODAL / INLINE FORM */}
-              {activeDocType && (
-                <div className="upload-box-overlay">
-                  <div className="upload-box">
-                    <h3>Upload {REQUIRED_DOCS.find(d => d.type === activeDocType)?.label}</h3>
-                    
-                    <div className="form-row">
-                      <label>Document Number</label>
-                      <input 
-                        type="text" 
-                        placeholder="ID Number"
-                        value={uploadData.document_number}
-                        onChange={(e) => setUploadData({...uploadData, document_number: e.target.value})}
-                      />
-                    </div>
-                    
-                    {/* Simulated File Input */}
-                    <div className="form-row">
-                      <label>Document File</label>
-                      <div className="file-mock-input">
-                        <span>📄 mock-document.pdf</span>
-                        <small>(Simulated Upload)</small>
-                      </div>
-                    </div>
-
-                    <div className="upload-actions">
-                      <button className="rydo-btn-secondary" onClick={() => setActiveDocType(null)}>Cancel</button>
-                      <button className="rydo-btn-primary" onClick={handleUpload} disabled={loading}>
-                        {loading ? 'Uploading...' : 'Confirm Upload'}
-                      </button>
-                    </div>
-                  </div>
+              {/* Completion State */}
+              {docStatus.all_uploaded && (
+                <div className="docs-complete-box">
+                  <h3>All Documents Submitted</h3>
+                  <p>Your application is under review. You can now access your dashboard.</p>
+                  <button className="rydo-submit-btn" onClick={handleFinish}>Go to Dashboard</button>
                 </div>
               )}
 
-              {docStatus.all_uploaded && (
-                <div className="completion-box">
-                  <h3>Application Under Review</h3>
-                  <p>Our team will verify your documents shortly. You can check back later.</p>
-                  <button className="rydo-submit-btn" onClick={() => window.location.href='/dashboard'}>Go to Dashboard</button>
+              {/* --- UPLOAD MODAL --- */}
+              {activeDoc && (
+                <div className="modal-overlay">
+                  <div className="modal-box">
+                    <h3>Upload {DOC_TYPES.find(d => d.key === activeDoc)?.label}</h3>
+                    
+                    <form onSubmit={handleUploadSubmit} className="registration-form">
+                      <div className="form-row">
+                        <label>Document Number</label>
+                        <input 
+                          type="text" placeholder="ID Number" required
+                          value={docInput.number}
+                          onChange={(e) => setDocInput({...docInput, number: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-row">
+                        <label>Simulated File</label>
+                        <div className="fake-file-input">
+                          {activeDoc}_scan.pdf
+                        </div>
+                      </div>
+                      <div className="modal-actions">
+                        <button type="button" className="rydo-btn-sec" onClick={() => setActiveDoc(null)}>Cancel</button>
+                        <button type="submit" className="rydo-btn-pri" disabled={loading}>
+                          {loading ? 'Uploading...' : 'Confirm'}
+                        </button>
+                      </div>
+                    </form>
+
+                  </div>
                 </div>
               )}
 
