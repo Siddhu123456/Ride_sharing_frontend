@@ -1,137 +1,200 @@
-/* src/features/fleet/VehicleOnboarding.css */
+/* src/features/fleet/FleetDashboard.css */
 
-/* Imports */
-@import '../admin/AdminShared.css'; /* Reuse if available, else standard styles apply */
-
-.back-link {
-  background: none;
-  border: none;
-  color: #666;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-bottom: 10px;
-  display: block;
-}
-.back-link:hover { color: #000; text-decoration: underline; }
-
-.split-flex-row {
+.fd-layout {
   display: flex;
-  gap: 16px;
-}
-.split-flex-row .form-row {
-  flex: 1;
-}
-
-/* Document Cards */
-.docs-container {
-  margin-top: 20px;
+  height: 100vh;
+  width: 100vw;
+  background: #f8f9fa;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
 }
 
-.docs-list {
+/* --- SIDEBAR --- */
+.fd-sidebar {
+  width: 260px;
+  background: #000000;
+  color: #888;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.doc-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  background: #fff;
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
-
-.doc-card.completed {
-  background: #f0fdf4;
-  border-color: #dcfce7;
-}
-
-.doc-name {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: #111;
-}
-
-.doc-status {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-top: 4px;
-  display: block;
-}
-
-.doc-status.pending { color: #d97706; }
-.doc-status.ok { color: #166534; }
-
-.doc-action-btn {
-  background: #000;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-.doc-action-btn:hover { background: #333; }
-
-/* Success Box */
-.success-box {
-  margin-top: 30px;
   padding: 24px;
-  background: #fafafa;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  text-align: center;
-}
-.success-box h3 {
-  margin: 0 0 16px 0;
-  color: #111;
+  flex-shrink: 0;
+  border-right: 1px solid #222;
 }
 
-/* Modal Reuse */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+.fd-brand {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 40px;
+  letter-spacing: -0.5px;
+}
+
+.fd-badge {
+  font-size: 0.6rem;
+  background: #333;
+  padding: 3px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* User Profile */
+.fd-user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #222;
+  margin-bottom: 24px;
+}
+
+.fd-avatar {
+  width: 40px;
+  height: 40px;
+  background: #333;
+  color: #fff;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
-  backdrop-filter: blur(2px);
+  font-weight: 700;
 }
 
-.modal-box {
-  background: #fff;
-  padding: 30px;
-  width: 90%;
-  max-width: 400px;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
+.fd-username { color: #fff; font-size: 0.9rem; font-weight: 600; }
+.fd-role { font-size: 0.75rem; color: #666; }
 
-.fake-file-input {
-  height: 48px;
-  background: #f7f7f7;
-  border: 1px dashed #ccc;
+/* Nav Buttons */
+.fd-nav {
   display: flex;
-  align-items: center;
-  padding: 0 16px;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.fd-nav-item {
+  background: transparent;
+  border: none;
+  color: #999;
+  padding: 12px 16px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 600;
   font-size: 0.9rem;
-  color: #666;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.fd-nav-item:hover { background: #222; color: #fff; }
+.fd-nav-item.active { background: #fff; color: #000; }
+.fd-nav-item.logout { margin-top: auto; color: #ef4444; }
+.fd-nav-item.logout:hover { background: #222; }
+
+/* --- MAIN CONTENT --- */
+.fd-content {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.fd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.fd-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.fd-btn-primary {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.fd-btn-primary:hover { background: #333; }
+
+/* --- CARDS GRID --- */
+.fd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.fd-card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  transition: transform 0.2s;
+}
+
+.fd-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.05); }
+
+.fd-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.fd-card-title { font-weight: 800; font-size: 1.2rem; color: #000; }
+
+.fd-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
   border-radius: 4px;
 }
+.fd-status.green { color: #166534; background: #f0fdf4; }
+.fd-status.red { color: #dc2626; background: #fef2f2; }
 
-.modal-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 15px;
+.fd-card-body p { margin: 6px 0; font-size: 0.95rem; color: #444; }
+.fd-meta { color: #888 !important; font-size: 0.85rem !important; margin-top: 10px !important; }
+
+.fd-card-actions {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 16px;
 }
 
-.rydo-btn-pri { height: 48px; background: #000; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; }
-.rydo-btn-sec { height: 48px; background: #fff; color: #000; border: 1px solid #ddd; border-radius: 4px; font-weight: 700; cursor: pointer; }
+.fd-btn-text {
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #000;
+  padding: 0;
+}
+.fd-btn-text:hover { text-decoration: underline; }
+
+/* Loading State */
+.fd-loading {
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #666;
+}

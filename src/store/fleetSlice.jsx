@@ -3,50 +3,62 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/fleet-owner';
 
-const getHeaders = () => {
+const getHeaders = (isMultipart = false) => {
   const token = localStorage.getItem('token'); 
-  return { 
-    headers: { 
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    } 
+  const headers = { 
+    'Authorization': `Bearer ${token}`
   };
+  // Axios automatically sets Content-Type to multipart/form-data with boundary 
+  // when FormData is passed, so we only strictly need JSON header for normal requests
+  if (!isMultipart) {
+    headers['Content-Type'] = 'application/json';
+  }
+  return { headers };
 };
 
 /* --- THUNKS --- */
 
-// 1. Check Fleet Status (Existing)
-export const checkFleetStatus = createAsyncThunk('fleet/checkStatus', async (_, { rejectWithValue }) => {
-  try {
-    const response = await axios.get(`${API_URL}/me`, getHeaders());
-    return response.data; 
-  } catch (err) {
-    if (err.response && err.response.status === 404) return null;
-    return rejectWithValue(err.response?.data?.detail);
+export const checkFleetStatus = createAsyncThunk(
+  'fleet/checkStatus',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/me`, getHeaders());
+      return response.data; 
+    } catch (err) {
+      if (err.response && err.response.status === 404) return null;
+      return rejectWithValue(err.response?.data?.detail);
+    }
   }
-});
+);
 
-// 2. Fetch Tenants (Existing)
-export const fetchFleetTenants = createAsyncThunk('fleet/fetchTenants', async (_, { rejectWithValue }) => {
-  try {
-    const response = await axios.get(`${API_URL}/tenants`, getHeaders());
-    return response.data;
-  } catch (err) {
-    return rejectWithValue(err.response?.data?.detail);
+export const fetchFleetTenants = createAsyncThunk(
+  'fleet/fetchTenants',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/tenants`, getHeaders());
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.detail);
+    }
   }
-});
+);
 
-// 3. Apply for Fleet (Existing)
-export const applyForFleet = createAsyncThunk('fleet/apply', async ({ tenantId, fleetName }, { rejectWithValue }) => {
-  try {
-    const response = await axios.post(`${API_URL}/apply`, { tenant_id: parseInt(tenantId), fleet_name: fleetName }, getHeaders());
-    return response.data;
-  } catch (err) {
-    return rejectWithValue(err.response?.data?.detail);
+export const applyForFleet = createAsyncThunk(
+  'fleet/apply',
+  async ({ tenantId, fleetName }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/apply`, 
+        { tenant_id: parseInt(tenantId), fleet_name: fleetName }, 
+        getHeaders()
+      );
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.detail);
+    }
   }
-});
+);
 
-// ✅ 4. Fetch Document Status (NEW)
 export const fetchDocStatus = createAsyncThunk(
   'fleet/fetchDocStatus',
   async (fleetId, { rejectWithValue }) => {
@@ -57,22 +69,30 @@ export const fetchDocStatus = createAsyncThunk(
       );
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.detail || 'Failed to fetch status');
+      return rejectWithValue(err.response?.data?.detail);
     }
   }
 );
 
-// ✅ 5. Upload Document (NEW)
+// ✅ UPDATED: Uses FormData
 export const uploadFleetDoc = createAsyncThunk(
   'fleet/uploadDoc',
   async ({ fleetId, docData }, { rejectWithValue, dispatch }) => {
     try {
+      const formData = new FormData();
+      formData.append('document_type', docData.document_type);
+      formData.append('file', docData.file); // Actual File Object
+      
+      if (docData.document_number) {
+        formData.append('document_number', docData.document_number);
+      }
+
       const response = await axios.post(
         `${API_URL}/fleets/${fleetId}/documents`, 
-        docData, 
-        getHeaders()
+        formData, 
+        getHeaders(true) // Multipart headers
       );
-      // Immediately refresh status to update UI
+      
       dispatch(fetchDocStatus(fleetId));
       return response.data;
     } catch (err) {
@@ -88,15 +108,7 @@ const fleetSlice = createSlice({
     fleet: null, 
     availableTenants: [],
     hasExistingFleet: null,
-    
-    // ✅ Document State
-    docStatus: {
-      uploaded: [],
-      missing: [],
-      all_uploaded: false,
-      all_approved: false
-    },
-    
+    docStatus: { uploaded: [], missing: [], all_uploaded: false, all_approved: false },
     loading: false,
     error: null,
     successMsg: null,
@@ -112,46 +124,29 @@ const fleetSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Check Status
       .addCase(checkFleetStatus.fulfilled, (state, action) => {
         if (action.payload) {
           state.fleet = action.payload;
           state.hasExistingFleet = true;
-          state.step = 2; // ✅ If fleet exists, go to docs immediately (handled in component)
+          state.step = 2; 
         } else {
           state.fleet = null;
           state.hasExistingFleet = false;
         }
       })
-      
-      // Fetch Tenants
       .addCase(fetchFleetTenants.fulfilled, (state, action) => { state.availableTenants = action.payload; })
-
-      // Apply
       .addCase(applyForFleet.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(applyForFleet.fulfilled, (state, action) => {
         state.loading = false;
         state.fleet = action.payload;
         state.hasExistingFleet = true;
-        state.step = 2; // ✅ Move to Step 2
+        state.step = 2;
       })
       .addCase(applyForFleet.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
-
-      // ✅ Fetch Doc Status
-      .addCase(fetchDocStatus.fulfilled, (state, action) => {
-        state.docStatus = action.payload;
-      })
-
-      // ✅ Upload Doc
+      .addCase(fetchDocStatus.fulfilled, (state, action) => { state.docStatus = action.payload; })
       .addCase(uploadFleetDoc.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(uploadFleetDoc.fulfilled, (state) => {
-        state.loading = false;
-        state.successMsg = "Document uploaded successfully";
-      })
-      .addCase(uploadFleetDoc.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+      .addCase(uploadFleetDoc.fulfilled, (state) => { state.loading = false; state.successMsg = "Document uploaded successfully"; })
+      .addCase(uploadFleetDoc.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
   },
 });
 

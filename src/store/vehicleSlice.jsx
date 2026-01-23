@@ -3,19 +3,19 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/fleet-owner';
 
-const getHeaders = () => {
+const getHeaders = (isMultipart = false) => {
   const token = localStorage.getItem('token'); 
-  return { 
-    headers: { 
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    } 
+  const headers = { 
+    'Authorization': `Bearer ${token}`
   };
+  if (!isMultipart) {
+    headers['Content-Type'] = 'application/json';
+  }
+  return { headers };
 };
 
 /* --- THUNKS --- */
 
-// 1. Add Vehicle
 export const addVehicle = createAsyncThunk(
   'vehicle/add',
   async ({ fleetId, vehicleData }, { rejectWithValue }) => {
@@ -25,14 +25,13 @@ export const addVehicle = createAsyncThunk(
         vehicleData, 
         getHeaders()
       );
-      return response.data; // Returns the created vehicle object
+      return response.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Failed to add vehicle');
     }
   }
 );
 
-// 2. Fetch Vehicle Doc Status
 export const fetchVehicleDocStatus = createAsyncThunk(
   'vehicle/fetchDocStatus',
   async (vehicleId, { rejectWithValue }) => {
@@ -48,17 +47,20 @@ export const fetchVehicleDocStatus = createAsyncThunk(
   }
 );
 
-// 3. Upload Vehicle Document
 export const uploadVehicleDoc = createAsyncThunk(
   'vehicle/uploadDoc',
   async ({ vehicleId, docData }, { rejectWithValue, dispatch }) => {
     try {
+      const formData = new FormData();
+      formData.append('document_type', docData.document_type);
+      formData.append('file', docData.file); // File Object
+
       const response = await axios.post(
         `${API_URL}/vehicles/${vehicleId}/documents`, 
-        docData, 
-        getHeaders()
+        formData, 
+        getHeaders(true)
       );
-      // Refresh status immediately
+
       dispatch(fetchVehicleDocStatus(vehicleId));
       return response.data;
     } catch (err) {
@@ -71,17 +73,12 @@ export const uploadVehicleDoc = createAsyncThunk(
 const vehicleSlice = createSlice({
   name: 'vehicle',
   initialState: {
-    currentVehicle: null, // The vehicle currently being onboarded
-    docStatus: {
-      uploaded: [],
-      missing: [],
-      all_uploaded: false,
-      all_approved: false
-    },
+    currentVehicle: null,
+    docStatus: { uploaded: [], missing: [], all_uploaded: false },
     loading: false,
     error: null,
     successMsg: null,
-    step: 1, // 1: Vehicle Details, 2: Documents
+    step: 1, // 1: Details, 2: Docs
   },
   reducers: {
     resetVehicleState: (state) => {
@@ -99,33 +96,17 @@ const vehicleSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Add Vehicle
       .addCase(addVehicle.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(addVehicle.fulfilled, (state, action) => {
         state.loading = false;
         state.currentVehicle = action.payload;
-        state.step = 2; // Move to docs
+        state.step = 2;
       })
-      .addCase(addVehicle.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Fetch Doc Status
-      .addCase(fetchVehicleDocStatus.fulfilled, (state, action) => {
-        state.docStatus = action.payload;
-      })
-
-      // Upload Doc
+      .addCase(addVehicle.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
+      .addCase(fetchVehicleDocStatus.fulfilled, (state, action) => { state.docStatus = action.payload; })
       .addCase(uploadVehicleDoc.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(uploadVehicleDoc.fulfilled, (state) => {
-        state.loading = false;
-        state.successMsg = "Document uploaded successfully";
-      })
-      .addCase(uploadVehicleDoc.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+      .addCase(uploadVehicleDoc.fulfilled, (state) => { state.loading = false; state.successMsg = "Document uploaded successfully"; })
+      .addCase(uploadVehicleDoc.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
   },
 });
 

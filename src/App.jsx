@@ -1,44 +1,33 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Register from './features/auth/Register.jsx';
 import Login from './features/auth/Login.jsx';
-
-// Admin Imports
 import AdminLayout from './features/admin/AdminLayout.jsx';
-import AdminLogin from './features/admin/AdminLogin.jsx'; // Import the new page
+import AdminLogin from './features/admin/AdminLogin.jsx';
 import TenantManager from './features/admin/TenantManager.jsx';
 import FleetRegistration from './features/fleet/FleetRegistration.jsx';
-import VehicleOnboarding from './features/fleet/VehicleOnboarding.jsx';
-
-// ...
-
-
-
+import FleetDashboard from './features/fleet/FleetDashboard.jsx'; // ✅
+import VehicleOnboarding from './features/fleet/VehicleOnboarding.jsx'; // ✅
 
 function App() {
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<Navigate to="/register" replace />} />
-        
-        {/* User Auth Routes */}
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        
-        {/* Admin Public Route */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+    <Routes>
+      <Route path="/" element={<Navigate to="/register" replace />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<Login />} />
+      
+      {/* Fleet */}
+      <Route path="/fleet-registration" element={<FleetRegistration />} />
+      <Route path="/dashboard" element={<FleetDashboard />} />
 
-        {/* Admin Protected Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-           <Route index element={<Navigate to="tenants" replace />} />
-           <Route path="tenants" element={<TenantManager />} />
-        </Route>
+      {/* Admin */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin" element={<AdminLayout />}>
+         <Route index element={<Navigate to="tenants" replace />} />
+         <Route path="tenants" element={<TenantManager />} />
+      </Route>
 
-        <Route path="/fleet-registration" element={<FleetRegistration />} />
-        <Route path="/fleet/add-vehicle" element={<VehicleOnboarding />} />
-        
-        <Route path="*" element={<Navigate to="/register" replace />} />
-      </Routes>
-    </>
+      <Route path="*" element={<Navigate to="/register" replace />} />
+    </Routes>
   );
 }
 
