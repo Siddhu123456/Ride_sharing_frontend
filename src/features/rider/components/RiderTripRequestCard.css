@@ -1,0 +1,78 @@
+.rreq-card {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--rydo-white);
+  padding: 18px;
+}
+
+.rreq-card h2 {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--rydo-black);
+}
+
+.rreq-sub {
+  margin-top: 6px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.rreq-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rreq-row label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.rreq-row input,
+.rreq-row select {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-main);
+  transition: var(--transition);
+}
+
+.rreq-row input:focus,
+.rreq-row select:focus {
+  border-color: var(--border-focus);
+  background: var(--rydo-white);
+}
+
+.rreq-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Button consistent with platform */
+.rreq-btn {
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--rydo-black);
+  background: var(--rydo-black);
+  color: var(--rydo-white);
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.rreq-btn:hover {
+  background: #111;
+}
+
+.rreq-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

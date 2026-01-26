@@ -1,93 +1,156 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { checkFleetStatus, fetchDocStatus, uploadFleetDoc } from '../../store/fleetSlice';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import {
+  checkFleetStatus,
+  fetchDocStatus,
+  uploadFleetDoc,
+  fetchFleetVehicles,
+  fetchFleetDrivers,
+  clearFleetError,
+} from "../../store/fleetSlice";
 
-// Sub-Components
-import DashboardSidebar from './components/DashboardSidebar';
-import DashboardOverview from './components/DashboardOverview';
-import VehicleManager from './components/VehicleManager';
-import DocUploadModule from './components/DocUploadModule';
-import AddVehicleModal from './components/AddVehicleModal';
+import DashboardSidebar from "./components/DashboardSidebar";
+import DashboardOverview from "./components/DashboardOverview";
+import VehicleManager from "./components/VehicleManager";
+import DriverManager from "./components/DriverManager";
+import AssignmentManager from "./components/AssignmentManager";
+import DocUploadModule from "./components/DocUploadModule";
+import AddVehicleModal from "./components/AddVehicleModal";
 
-import './FleetDashboard.css';
+import "./FleetDashboard.css";
 
 const FleetDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { fleet, hasExistingFleet, docStatus, loading } = useSelector((state) => state.fleet);
-  const [activeTab, setActiveTab] = useState('OVERVIEW');
+  const { fleet, loading, hasExistingFleet, docStatus, error, successMsg } = useSelector(
+    (state) => state.fleet
+  );
+
+  const [activeTab, setActiveTab] = useState("OVERVIEW");
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
 
-  useEffect(() => { dispatch(checkFleetStatus()); }, [dispatch]);
+  useEffect(() => {
+    dispatch(checkFleetStatus());
+  }, [dispatch]);
 
   useEffect(() => {
-    if (fleet?.fleet_id) dispatch(fetchDocStatus(fleet.fleet_id));
+    if (!fleet?.fleet_id) return;
+
+    // Unverified
+    if (fleet.approval_status !== "APPROVED") {
+      dispatch(fetchDocStatus(fleet.fleet_id));
+      return;
+    }
+
+    // Verified
+    dispatch(fetchFleetVehicles(fleet.fleet_id));
+    dispatch(fetchFleetDrivers(fleet.fleet_id));
   }, [fleet, dispatch]);
 
   useEffect(() => {
-    if (hasExistingFleet === false) navigate('/fleet-registration');
+    if (hasExistingFleet === false) navigate("/fleet-registration");
   }, [hasExistingFleet, navigate]);
 
-  const statusLabel = useMemo(() => fleet?.approval_status || 'PENDING', [fleet]);
-
-  if (loading || !fleet) return <div className="fd-loader"><div className="spinner"></div></div>;
-
-  // --- STATE 1: ONBOARDING (UNVERIFIED) ---
-  if (fleet.approval_status !== 'APPROVED') {
+  if (loading && !fleet) {
     return (
-      <div className="fd-onboarding-layout">
-        {/* ✅ CLEAN NAVBAR: Only Brand & Utility */}
-        <nav className="fd-navbar">
-          <div className="fd-navbar-brand">
-            Rydo<span className="fd-brand-badge">FLEET</span>
-          </div>
-          <div className="fd-navbar-actions">
-            <button className="fd-btn-logout" onClick={() => { localStorage.clear(); window.location.href = '/login'; }}>
-              Sign Out
-            </button>
-          </div>
-        </nav>
+      <div className="fd-screen-loader">
+        <div className="rydo-spinner"></div>
+      </div>
+    );
+  }
 
-        {/* ✅ SPACIOUS CONTENT AREA */}
-        <div className="fd-onboarding-content">
-          <header className="fd-welcome-section">
-            <div className="fd-welcome-badge">ONBOARDING PHASE</div>
-            <h1>Welcome, {fleet.fleet_name}</h1>
-            <p>Your fleet profile is currently <strong>{statusLabel}</strong>. Complete the verification below to activate your command center.</p>
-          </header>
+  // --- ONBOARDING VIEW (UNVERIFIED) ---
+  if (fleet && fleet.approval_status !== "APPROVED") {
+    return (
+      <div className="fd-onboarding-shell">
+        <header className="fd-utility-nav">
+          <div className="fd-nav-brand">
+            Rydo<span>FLEET</span>
+          </div>
+          <button
+            className="fd-nav-logout"
+            onClick={() => {
+              localStorage.clear();
+              window.location.href = "/login";
+            }}
+          >
+            Logout Account
+          </button>
+        </header>
+
+        <div className="fd-onboarding-viewport">
+          <div className="fd-hero-content">
+            <span className="fd-badge-new">Verification Required</span>
+            <h1>Command Center Activation</h1>
+            <p>
+              Welcome, <strong>{fleet.fleet_name}</strong>. Provide your business credentials to
+              begin operations.
+            </p>
+
+            {(error || successMsg) && (
+              <div className={`fd-banner ${error ? "error" : "success"}`}>
+                <span>{error || successMsg}</span>
+                <button onClick={() => dispatch(clearFleetError())}>✕</button>
+              </div>
+            )}
+          </div>
 
           <DocUploadModule
             fleetId={fleet.fleet_id}
             docStatus={docStatus}
             dispatch={dispatch}
             uploadAction={uploadFleetDoc}
-            approvalStatus={statusLabel}
-            statusClass={statusLabel.toLowerCase().includes('review') ? 'review' : 'pending'}
+            approvalStatus={fleet.approval_status}
           />
         </div>
       </div>
     );
   }
 
-  // --- STATE 2: ACTIVE DASHBOARD (VERIFIED) ---
+  // --- FULL DASHBOARD VIEW (VERIFIED) ---
   return (
-    <div className="fd-layout">
-      <DashboardSidebar fleetName={fleet.fleet_name} activeTab={activeTab} setActiveTab={setActiveTab} />
-      <main className="fd-main">
-        <header className="fd-topbar">
-          <div className="fd-breadcrumbs">
-            <span className="fd-crumb-root">Console</span> / <span className="fd-crumb-active">{activeTab}</span>
+    <div className="fd-dashboard-shell">
+      <DashboardSidebar
+        fleetName={fleet?.fleet_name}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
+
+      <main className="fd-main-viewport">
+        <header className="fd-top-utility-bar">
+          <div className="fd-breadcrumb">
+            Console / <strong>{activeTab}</strong>
           </div>
-          <div className="fd-user-menu"><span className="fd-status-dot"></span> Active</div>
+          <div className="fd-system-status">
+            <span className="fd-dot-active"></span>
+            System Operational
+          </div>
         </header>
-        <div className="fd-view-container">
-          {activeTab === 'OVERVIEW' && <DashboardOverview navigate={navigate} setShowAddVehicleModal={setShowAddVehicleModal} />}
-          {activeTab === 'VEHICLES' && <VehicleManager />}
+
+        {(error || successMsg) && (
+          <div className={`fd-banner ${error ? "error" : "success"}`}>
+            <span>{error || successMsg}</span>
+            <button onClick={() => dispatch(clearFleetError())}>✕</button>
+          </div>
+        )}
+
+        <div className="fd-scrollable-content">
+          {activeTab === "OVERVIEW" && (
+            <DashboardOverview onAddVehicle={() => setShowAddVehicleModal(true)} />
+          )}
+          {activeTab === "VEHICLES" && (
+            <VehicleManager fleetId={fleet?.fleet_id} onAdd={() => setShowAddVehicleModal(true)} />
+          )}
+          {activeTab === "DRIVERS" && <DriverManager fleetId={fleet?.fleet_id} />}
+          {activeTab === "ASSIGNMENTS" && <AssignmentManager fleetId={fleet?.fleet_id} />}
         </div>
       </main>
-      {showAddVehicleModal && <AddVehicleModal fleetId={fleet.fleet_id} onClose={() => setShowAddVehicleModal(false)} />}
+
+      {showAddVehicleModal && (
+        <AddVehicleModal fleetId={fleet?.fleet_id} onClose={() => setShowAddVehicleModal(false)} />
+      )}
     </div>
   );
 };

@@ -6,6 +6,9 @@ import AdminLogin from './features/admin/AdminLogin.jsx';
 import TenantManager from './features/admin/TenantManager.jsx';
 import FleetRegistration from './features/fleet/FleetRegistration.jsx';
 import FleetDashboard from './features/fleet/FleetDashboard.jsx'; // ✅
+import RiderTripsPage from "./features/rider/pages/RiderTripsPage.jsx";
+
+
 import VehicleOnboarding from './features/fleet/VehicleOnboarding.jsx'; // ✅
 
 function App() {
@@ -27,6 +30,8 @@ function App() {
       </Route>
 
       <Route path="*" element={<Navigate to="/register" replace />} />
+
+      <Route path="/rider/trips" element={<RiderTripsPage />} />
     </Routes>
   );
 }

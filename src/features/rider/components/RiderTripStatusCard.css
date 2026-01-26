@@ -1,0 +1,76 @@
+.rstat-card {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--rydo-white);
+  padding: 16px;
+}
+
+.rstat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.rstat-head h3 {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--rydo-black);
+}
+
+/* Status pill */
+.rstat-pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.rstat-empty {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.rstat-body {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rstat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.rstat-row strong {
+  font-weight: 900;
+}
+
+/* Cancel Button */
+.rstat-btn {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  background: var(--error-bg);
+  color: var(--error-text);
+  font-weight: 900;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.rstat-btn:hover {
+  border-color: rgba(220, 38, 38, 0.55);
+}
+
+.rstat-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

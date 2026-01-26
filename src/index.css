@@ -1,40 +1,76 @@
-/* src/index.css */
 :root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --rydo-black: #000000;
+  --rydo-white: #ffffff;
 
-  /* Force light mode background to prevent blending issues with dark mode OS settings */
-  color: #18181b;
-  background-color: #f8fafc;
+  --rydo-bg: #f9fafb;
+  --rydo-surface: #ffffff;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --rydo-border: #e5e7eb;
+  --rydo-border-2: #eef2f7;
+
+  --rydo-text-main: #111827;
+  --rydo-text-muted: #6b7280;
+
+  --rydo-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --rydo-shadow-md: 0 10px 25px rgba(0, 0, 0, 0.06);
+  --rydo-shadow-lg: 0 18px 45px rgba(0, 0, 0, 0.12);
+
+  --rydo-radius-sm: 10px;
+  --rydo-radius-md: 14px;
+  --rydo-radius-lg: 18px;
 }
 
-/* ✅ CRITICAL: Box-sizing reset for the entire app */
-*, *::before, *::after {
+* {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  display: block; /* ✅ Remove flex centering */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--rydo-bg);
+  color: var(--rydo-text-main);
+  line-height: 1.5;
+  overflow: hidden; /* Dashboard app mode */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
   width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden; /* ✅ Prevent horizontal bounce */
+  height: 100vh;
 }
 
+/* ✅ Better default focus */
+:focus-visible {
+  outline: 2px solid rgba(0, 0, 0, 0.35);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ✅ Smooth clickable UI */
+button,
 a {
-  font-weight: 500;
-  color: #000000;
-  text-decoration: none;
-  transition: color 0.2s;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  margin: 0;
+button:active {
+  transform: translateY(1px);
+}
+
+/* ✅ Scrollbar polish */
+*::-webkit-scrollbar {
+  width: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 99px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
 }

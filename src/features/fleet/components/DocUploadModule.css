@@ -1,102 +1,154 @@
-/* src/features/fleet/components/DocUploadModule.css */
-
-.p-module-wrapper {
-  width: 100%;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 48px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-  box-sizing: border-box; /* ✅ Vital for horizontal fit */
+.du-container {
+  background: #fff;
+  border: 1px solid var(--rydo-border);
+  border-radius: 18px;
+  padding: 36px;
+  box-shadow: var(--rydo-shadow-sm);
 }
 
-/* HEADER Alignment */
-.p-module-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #f1f5f9;
+.du-progress-bar {
+  margin-bottom: 26px;
 }
 
-.p-header-left h2 { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; }
-.p-header-left p { color: #64748b; font-size: 0.95rem; margin: 0; }
+.du-progress-text {
+  font-weight: 900;
+  color: #0f172a;
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+}
 
-.p-status-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 16px;
+.du-track {
+  height: 10px;
+  background: #f1f5f9;
   border-radius: 99px;
-  font-weight: 800;
-  font-size: 0.85rem;
+  overflow: hidden;
 }
-.p-status-badge.pending { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
-.p-status-badge.review { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-.p-dot { width: 8px; height: 8px; background: currentColor; border-radius: 50%; margin-right: 10px; }
 
-/* PROGRESS BAR */
-.p-progress-section { margin-bottom: 40px; }
-.p-progress-labels { display: flex; justify-content: space-between; font-weight: 700; color: #475569; margin-bottom: 12px; }
-.p-progress-track { height: 10px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
-.p-progress-fill { height: 100%; background: #0f172a; transition: width 0.8s ease; }
+.du-fill {
+  height: 100%;
+  background: #000;
+  border-radius: 99px;
+  transition: width 0.8s ease;
+}
 
-/* GRID: Prevent Off-Screen Overflow */
-.p-docs-grid {
+.du-grid {
   display: grid;
-  /* ✅ minmax 300px ensures it fits on almost all screens */
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 18px;
 }
 
-.p-doc-card {
-  padding: 24px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+.du-card {
+  background: #fff;
+  border: 1px solid var(--rydo-border);
+  border-radius: 14px;
+  padding: 18px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
+  justify-content: space-between;
+  gap: 14px;
+  transition: 0.2s ease;
 }
 
-.p-doc-card:hover {
-  border-color: #0f172a;
+.du-card:hover {
+  border-color: #000;
+  box-shadow: var(--rydo-shadow-md);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.p-doc-card.is-done {
+.du-card.done {
   background: #f8fafc;
-  border-color: #dcfce7;
+  border-color: #bbf7d0;
 }
 
-.p-card-main { display: flex; align-items: center; gap: 16px; }
-.p-card-icon { font-size: 1.5rem; width: 48px; height: 48px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
-.p-card-info h4 { font-size: 1rem; font-weight: 800; color: #0f172a; margin: 0 0 2px 0; }
-.p-card-info p { font-size: 0.85rem; color: #64748b; margin: 0; }
-
-.p-upload-btn {
-  background: #0f172a;
-  color: #fff;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 0.85rem;
-  cursor: pointer;
-  white-space: nowrap;
+.du-card-info h3 {
+  font-size: 1rem;
+  font-weight: 900;
+  margin-bottom: 4px;
 }
 
-.p-done-tag {
-  font-weight: 800;
-  color: #16a34a;
-  background: #dcfce7;
-  padding: 6px 14px;
-  border-radius: 99px;
+.du-card-info p {
+  color: var(--rydo-text-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.du-status-tag {
+  font-weight: 900;
   font-size: 0.8rem;
-  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.du-upload-btn {
+  background: #000;
+  border: 1px solid #000;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.du-upload-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--rydo-shadow-md);
+}
+
+/* Modal */
+.du-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4000;
+}
+
+.du-modal {
+  width: min(480px, 92vw);
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid var(--rydo-border);
+  box-shadow: var(--rydo-shadow-lg);
+  padding: 22px;
+}
+
+.du-modal h3 {
+  font-weight: 900;
+  margin-bottom: 14px;
+}
+
+.du-modal input[type='file'] {
+  width: 100%;
+  padding: 12px;
+  border: 1px dashed var(--rydo-border);
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.du-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.du-modal-actions button {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  border: 1px solid var(--rydo-border);
+  background: #fff;
+}
+
+.du-btn-primary {
+  background: #000 !important;
+  border-color: #000 !important;
+  color: #fff !important;
 }

@@ -1,28 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, selectRole, resetAuth } from '../../store/authslice';
-import { Link, useNavigate } from 'react-router-dom';
-import './Login.css';
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser, selectRole, resetAuth } from "../../store/authslice";
+import { Link, useNavigate } from "react-router-dom";
+import "./Login.css";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
-  const { loading, error, authStep, roles, user, token } = useSelector((state) => state.auth);
 
-  const [creds, setCreds] = useState({ email: '', password: '' });
+  const { loading, error, authStep, roles, user, token } = useSelector(
+    (state) => state.auth
+  );
 
-  // Handle standard redirect (only if NOT going to fleet page via the special button)
-  useEffect(() => {
-    // If we have a token and we are NOT handling a fleet redirect manually, go to dashboard
-    if (token && window.location.pathname !== '/fleet-registration') {
-       // logic handled by specific buttons now
-    }
-  }, [token]);
+  const [creds, setCreds] = useState({ email: "", password: "" });
 
   // Clean up
   useEffect(() => {
-    return () => { dispatch(resetAuth()); };
+    return () => {
+      dispatch(resetAuth());
+    };
   }, [dispatch]);
 
   const handleChange = (e) => {
@@ -34,31 +30,40 @@ const Login = () => {
     dispatch(loginUser(creds));
   };
 
-  // ✅ Standard Role Selection
+  // ✅ UPDATED: Role Selection Navigation
   const handleRoleSelect = async (role) => {
     if (user && user.user_id) {
       const result = await dispatch(selectRole({ user_id: user.user_id, role }));
+
       if (selectRole.fulfilled.match(result)) {
-        navigate('/dashboard');
+        // ✅ If Rider -> go to RiderTripsPage
+        if (role === "RIDER") {
+          navigate("/rider/trips");
+        }
+        // ✅ Driver -> can redirect to driver dashboard (future)
+        else if (role === "DRIVER") {
+          navigate("/driver-dashboard");
+        }
+        // ✅ Fleet Owner -> fleet dashboard
+        else if (role === "FLEET_OWNER") {
+          navigate("/dashboard");
+        }
       }
     }
   };
 
-  // ✅ NEW: Become Fleet Owner Handler
+  // ✅ Become Fleet Owner Handler (same logic)
   const handleBecomeFleetOwner = async () => {
     if (user && user.user_id) {
-      // 1. Log in as RIDER to get a valid Token
-      const result = await dispatch(selectRole({ user_id: user.user_id, role: 'RIDER' }));
-      
-      // 2. If successful, redirect to Fleet Registration
+      const result = await dispatch(selectRole({ user_id: user.user_id, role: "RIDER" }));
+
       if (selectRole.fulfilled.match(result)) {
-        navigate('/fleet-registration');
+        navigate("/fleet-registration");
       }
     }
   };
 
-  // Check if user already is a fleet owner
-  const isFleetOwner = roles.includes('FLEET_OWNER');
+  const isFleetOwner = roles.includes("FLEET_OWNER");
 
   return (
     <div className="rydo-layout">
@@ -73,28 +78,46 @@ const Login = () => {
       {/* RIGHT SIDE */}
       <div className="form-pane">
         <div className="form-content-box">
-          
           <header className="form-intro">
-            <h2>{authStep === 'CREDENTIALS' ? 'Sign In' : 'Select Profile'}</h2>
-            <p>{authStep === 'CREDENTIALS' ? 'Enter your details to proceed.' : 'Choose how you want to ride today.'}</p>
+            <h2>{authStep === "CREDENTIALS" ? "Sign In" : "Select Profile"}</h2>
+            <p>
+              {authStep === "CREDENTIALS"
+                ? "Enter your details to proceed."
+                : "Choose how you want to ride today."}
+            </p>
           </header>
 
-          {error && <div className="auth-alert error">{error}</div>}
+          {error && <div className="auth-alert error">{String(error)}</div>}
 
           {/* VIEW 1: CREDENTIALS */}
-          {authStep === 'CREDENTIALS' && (
+          {authStep === "CREDENTIALS" && (
             <form onSubmit={handleLoginSubmit} className="registration-form">
               <div className="form-row">
                 <label>Email Address</label>
-                <input name="email" type="email" placeholder="email@example.com" onChange={handleChange} required />
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="email@example.com"
+                  onChange={handleChange}
+                  required
+                />
               </div>
+
               <div className="form-row">
                 <label>Password</label>
-                <input name="password" type="password" placeholder="••••••••" onChange={handleChange} required />
+                <input
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  onChange={handleChange}
+                  required
+                />
               </div>
+
               <button type="submit" className="rydo-submit-btn" disabled={loading}>
                 {loading ? "Verifying..." : "Continue"}
               </button>
+
               <div className="form-footer-link">
                 New to Rydo? <Link to="/register">Create an account</Link>
               </div>
@@ -102,24 +125,24 @@ const Login = () => {
           )}
 
           {/* VIEW 2: ROLE SELECTION */}
-          {authStep === 'ROLE_SELECT' && (
+          {authStep === "ROLE_SELECT" && (
             <div className="role-selection-grid">
               {/* Existing Roles */}
               {roles.map((role) => (
-                <button 
-                  key={role} 
+                <button
+                  key={role}
                   className="role-card"
                   onClick={() => handleRoleSelect(role)}
                   disabled={loading}
                 >
-                  <span className="role-name">{role.replace('_', ' ')}</span>
+                  <span className="role-name">{role.replace("_", " ")}</span>
                   <span className="role-arrow">→</span>
                 </button>
               ))}
-              
-              {/* ✅ NEW: BECOME FLEET OWNER BUTTON (Only if not already one) */}
+
+              {/* ✅ Become Fleet Owner Button */}
               {!isFleetOwner && (
-                <button 
+                <button
                   className="role-card fleet-promo"
                   onClick={handleBecomeFleetOwner}
                   disabled={loading}
@@ -137,7 +160,6 @@ const Login = () => {
               </button>
             </div>
           )}
-
         </div>
       </div>
     </div>

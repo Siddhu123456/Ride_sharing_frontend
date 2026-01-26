@@ -1,24 +1,84 @@
-import React from 'react';
+import React, { useMemo } from "react";
+import { useSelector } from "react-redux";
+import "./DashboardOverview.css";
 
-const DashboardOverview = ({ navigate, setShowAddVehicleModal }) => {
+const DashboardOverview = ({ onAddVehicle }) => {
+  const { vehicles = [], drivers = [] } = useSelector((state) => state.fleet);
+
+  const pendingVehicles = useMemo(() => {
+    return vehicles.filter((v) => v.approval_status !== "APPROVED");
+  }, [vehicles]);
+
+  const approvedVehicles = useMemo(() => {
+    return vehicles.filter((v) => v.approval_status === "APPROVED" && v.status === "ACTIVE");
+  }, [vehicles]);
+
+  const stats = [
+    { label: "Total Vehicles", value: vehicles.length, icon: "🚗" },
+    { label: "Approved Assets", value: approvedVehicles.length, icon: "✅" },
+    { label: "Pending Vehicles", value: pendingVehicles.length, icon: "📄" },
+    { label: "Active Drivers", value: drivers.length, icon: "👥" },
+  ];
+
   return (
-    <div className="fd-overview-container">
-      {/* Stats Grid ... (keep existing) */}
-      <div className="fd-stats-grid">
-         {/* ... */}
+    <div className="do-container">
+      {/* STATS */}
+      <div className="do-stats-grid">
+        {stats.map((stat, i) => (
+          <div key={i} className="do-stat-card">
+            <div className="do-stat-icon">{stat.icon}</div>
+            <div className="do-stat-info">
+              <span className="do-stat-label">{stat.label}</span>
+              <span className="do-stat-value">{stat.value}</span>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <h3 className="section-title">Quick Actions</h3>
-      <div className="fd-actions-grid">
-        {/* ✅ Update OnClick */}
-        <button className="action-card" onClick={() => setShowAddVehicleModal(true)}>
-          <span className="icon">+</span>
-          <span>Add New Vehicle</span>
-        </button>
-        <button className="action-card" onClick={() => alert('Coming Soon')}>
-          <span className="icon">👤</span>
-          <span>Onboard Driver</span>
-        </button>
+      <div className="do-content-grid">
+        {/* PENDING VEHICLES */}
+        <div className="do-main-card">
+          <div className="do-card-head">
+            <h3>Pending Verification</h3>
+            <button className="do-action-btn" onClick={onAddVehicle}>
+              + Add Vehicle
+            </button>
+          </div>
+
+          {pendingVehicles.length === 0 ? (
+            <p className="do-empty-msg">All vehicles are verified ✅</p>
+          ) : (
+            <div className="do-pending-list">
+              {pendingVehicles.slice(0, 5).map((v) => (
+                <div key={v.vehicle_id} className="do-pending-item">
+                  <div>
+                    <strong>{v.registration_no}</strong>
+                    <span className="do-subtext">
+                      {v.category} • {v.approval_status}
+                    </span>
+                  </div>
+
+                  <span className="do-pill pending">Pending Docs</span>
+                </div>
+              ))}
+              {pendingVehicles.length > 5 && (
+                <p className="do-subtext">+{pendingVehicles.length - 5} more pending vehicles</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* QUICK ACTIONS */}
+        <div className="do-side-card">
+          <h3>Quick Actions</h3>
+          <div className="do-actions">
+            <button className="do-action-btn" onClick={onAddVehicle}>
+              Add Vehicle
+            </button>
+            <button className="do-action-btn">Generate Report</button>
+            <button className="do-action-btn logout">Emergency Protocol</button>
+          </div>
+        </div>
       </div>
     </div>
   );

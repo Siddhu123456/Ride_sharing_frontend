@@ -1,116 +1,82 @@
 import React, { useMemo, useState } from "react";
 import "./DocUploadModule.css";
 
-const DocUploadModule = ({
-  fleetId,
-  docStatus,
-  dispatch,
-  uploadAction,
-  approvalStatus,
-  statusClass,
-}) => {
-  const [showModal, setShowModal] = useState(false);
-  const [selectedDoc, setSelectedDoc] = useState(null);
-  const [docNumber, setDocNumber] = useState("");
+const DOC_TYPES = [
+  { key: "AADHAAR", label: "Aadhaar Card", desc: "Personal ID Verification" },
+  { key: "PAN", label: "PAN Card", desc: "Tax Identification" },
+  { key: "GST_CERTIFICATE", label: "GST Certificate", desc: "Business Registration" },
+  { key: "BUSINESS_REGISTRATION", label: "Incorporation", desc: "Proof of Ownership" },
+];
+
+const DocUploadModule = ({ fleetId, docStatus, dispatch, uploadAction }) => {
+  const [activeDoc, setActiveDoc] = useState(null);
   const [file, setFile] = useState(null);
 
-  const documents = useMemo(() => [
-    { type: "AADHAAR", title: "Aadhaar Card", sub: "National Identity", icon: "🪪" },
-    { type: "PAN", title: "PAN Card", sub: "Tax Identification", icon: "💳" },
-    { type: "GST_CERTIFICATE", title: "GST Certificate", sub: "Business Tax Reg.", icon: "📄" },
-    { type: "BUSINESS_REGISTRATION", title: "Business Registration", sub: "Ownership Proof", icon: "🏢" },
-  ], []);
+  const uploadedDocs = Array.isArray(docStatus?.uploaded) ? docStatus.uploaded : [];
 
-  const uploadedMap = useMemo(() => {
-    const map = {};
-    (docStatus?.uploaded || []).forEach(d => map[d.document_type] = d);
-    return map;
-  }, [docStatus]);
+  const isUploaded = (key) => uploadedDocs.some((d) => d.document_type === key);
 
-  const progress = Math.round(((docStatus?.uploaded?.length || 0) / documents.length) * 100);
+  const progress = useMemo(() => {
+    if (DOC_TYPES.length === 0) return 0;
+    return Math.round((uploadedDocs.length / DOC_TYPES.length) * 100);
+  }, [uploadedDocs]);
 
-  const handleUpload = async () => {
-    if (!file) return;
-    await dispatch(uploadAction({ fleetId, document_type: selectedDoc.type, document_number: docNumber, file })).unwrap();
-    setShowModal(false);
+  const handleFileSubmit = async (e) => {
+    e.preventDefault();
+    if (!file || !activeDoc) return;
+
+    await dispatch(uploadAction({ fleetId, docData: { document_type: activeDoc, file } }));
+    setActiveDoc(null);
     setFile(null);
-    setDocNumber("");
   };
 
   return (
-    <div className="p-module-wrapper">
-      {/* 1. HEADER */}
-      <div className="p-module-header">
-        <div className="p-header-left">
-          <h2>Document Verification</h2>
-          <p>Submit business credentials to verify your fleet operations.</p>
-        </div>
-        <div className="p-status-container">
-          <span className="p-status-label">Profile Status</span>
-          <div className={`p-status-badge ${statusClass}`}>
-            <span className="p-dot"></span> {approvalStatus}
-          </div>
+    <div className="du-container">
+      <div className="du-progress-bar">
+        <div className="du-progress-text">Verification Progress: {progress}%</div>
+        <div className="du-track">
+          <div className="du-fill" style={{ width: `${progress}%` }}></div>
         </div>
       </div>
 
-      {/* 2. PROGRESS */}
-      <div className="p-progress-section">
-        <div className="p-progress-labels">
-          <span>Verification Completion</span>
-          <span>{progress}%</span>
-        </div>
-        <div className="p-progress-track">
-          <div className="p-progress-fill" style={{ width: `${progress}%` }}></div>
-        </div>
-      </div>
+      <div className="du-grid">
+        {DOC_TYPES.map((doc) => {
+          const done = isUploaded(doc.key);
 
-      {/* 3. GRID */}
-      <div className="p-docs-grid">
-        {documents.map((doc) => {
-          const isDone = !!uploadedMap[doc.type];
           return (
-            <div key={doc.type} className={`p-doc-card ${isDone ? 'is-done' : ''}`}>
-              <div className="p-card-main">
-                <div className="p-card-icon">{doc.icon}</div>
-                <div className="p-card-info">
-                  <h4>{doc.title}</h4>
-                  <p>{doc.sub}</p>
-                </div>
+            <div key={doc.key} className={`du-card ${done ? "done" : ""}`}>
+              <div className="du-card-info">
+                <h3>{doc.label}</h3>
+                <p>{doc.desc}</p>
               </div>
-              <div className="p-card-footer">
-                {isDone ? (
-                  <span className="p-done-tag">✓ Uploaded</span>
-                ) : (
-                  <button className="p-upload-btn" onClick={() => { setSelectedDoc(doc); setShowModal(true); }}>
-                    Upload File
-                  </button>
-                )}
-              </div>
+
+              {done ? (
+                <span className="du-status-tag">Uploaded</span>
+              ) : (
+                <button className="du-upload-btn" onClick={() => setActiveDoc(doc.key)}>
+                  Upload Now
+                </button>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* MODAL */}
-      {showModal && (
-        <div className="p-modal-overlay">
-          <div className="p-modal">
-            <h3>Upload {selectedDoc.title}</h3>
-            <div className="p-field">
-              <label>Document Number</label>
-              <input type="text" placeholder="e.g. ABC12345" value={docNumber} onChange={e => setDocNumber(e.target.value)} />
-            </div>
-            <div className="p-field">
-              <label>Attachment</label>
-              <div className="p-file-input">
-                <input type="file" onChange={e => setFile(e.target.files[0])} />
-                <p>{file ? file.name : "Select a PDF or Image"}</p>
+      {activeDoc && (
+        <div className="du-modal-overlay" onClick={() => setActiveDoc(null)}>
+          <div className="du-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Upload {activeDoc}</h3>
+            <form onSubmit={handleFileSubmit}>
+              <input type="file" onChange={(e) => setFile(e.target.files?.[0])} required />
+              <div className="du-modal-actions">
+                <button type="button" onClick={() => setActiveDoc(null)}>
+                  Cancel
+                </button>
+                <button type="submit" className="du-btn-primary">
+                  Submit File
+                </button>
               </div>
-            </div>
-            <div className="p-modal-actions">
-              <button className="p-btn-sec" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="p-btn-pri" onClick={handleUpload}>Confirm Submit</button>
-            </div>
+            </form>
           </div>
         </div>
       )}
