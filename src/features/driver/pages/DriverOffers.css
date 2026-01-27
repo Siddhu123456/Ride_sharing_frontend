@@ -1,0 +1,12 @@
+.driver-offers {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.driver-empty {
+  padding: 48px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1rem;
+}

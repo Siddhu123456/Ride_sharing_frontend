@@ -1,0 +1,28 @@
+.doc-card {
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  margin-bottom: 16px;
+  background: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doc-card span {
+  font-weight: 500;
+}
+
+.doc-card input {
+  padding: 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+}
+
+.doc-card button {
+  align-self: flex-start;
+}
+
+.doc-done {
+  color: var(--success-text);
+  font-size: 0.9rem;
+}

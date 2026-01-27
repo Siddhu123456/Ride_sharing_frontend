@@ -1,104 +1,98 @@
-/* src/styles/variables.css */
-
-:root {
-  /* --- 1. BRAND IDENTITY (The Rydo Black & White Aesthetic) --- */
-  --rydo-black: #000000;
-  --rydo-white: #ffffff;
-  --rydo-accent: #2563eb; /* Electric Blue for subtle highlights */
-  
-  /* --- 2. NEUTRAL PALETTE (Premium Grays) --- */
-  --bg-main: #ffffff;
-  --bg-input: #f6f6f6;
-  --bg-hero-overlay: rgba(0, 0, 0, 0.65);
-  
-  --text-main: #111827;
-  --text-muted: #6b7280;
-  --text-white: #ffffff;
-  
-  --border-color: #eeeeee;
-  --border-focus: #000000;
-
-  /* --- 3. STATUS COLORS (Subtle Production Grade) --- */
-  --error-text: #dc2626;
-  --error-bg: #fef2f2;
-  --success-text: #16a34a;
-  --success-bg: #f0fdf4;
-
-  /* --- 4. TYPOGRAPHY --- */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --radius: 2px; /* Sharper, modern edges for high-end feel */
-  
-  /* --- 5. TRANSITIONS --- */
-  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* --- THE ULTIMATE BUFFER RESET --- */
-/* This section kills all blank space in all 4 directions */
-
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html, body {
-  /* Prevent scrolling on the root to stop "bounce" and buffer gaps */
-  overflow: hidden !important; 
-  width: 100vw !important;
-  height: 100vh !important;
-  
-  /* Ensure the app starts exactly at the top-left corner */
-  position: fixed;
-  top: 0;
-  left: 0;
-  
-  background-color: var(--rydo-white);
-  color: var(--text-main);
-  font-family: var(--font-family);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#root {
-  width: 100vw;
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Standardizing Form Elements for the Platform */
-input, select, button {
-  font-family: inherit;
-  font-size: 1rem;
-  outline: none;
-}
-
-/* Reset Links */
-a {
-  text-decoration: none;
-  transition: var(--transition);
-}
-
-/* Custom Scrollbar for internal panels (if needed) */
-.scrollable-panel {
-  overflow-y: auto;
-  scrollbar-width: none; /* Firefox */
-}
-
-.scrollable-panel::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
-}
-
-/* --- 6. UTILITY CLASSES --- */
-.flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.full-size {
+.rtp-shell {
   width: 100%;
   height: 100%;
+  padding: 22px;
+  background: var(--bg-main);
+  color: var(--text-main);
+
+  /* ✅ IMPORTANT (because body scroll is disabled globally) */
+  overflow-y: auto;
+}
+
+.rtp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.rtp-header h1 {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  color: var(--rydo-black);
+}
+
+.rtp-header p {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Right status badge */
+.rtp-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rtp-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.rtp-dot.active {
+  background: var(--success-text);
+}
+
+/* Alerts */
+.rtp-banner {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.rtp-banner.error {
+  background: var(--error-bg);
+  border-color: rgba(220, 38, 38, 0.25);
+  color: var(--error-text);
+}
+
+.rtp-banner.success {
+  background: var(--success-bg);
+  border-color: rgba(22, 163, 74, 0.25);
+  color: var(--success-text);
+}
+
+/* Layout */
+.rtp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.rtp-right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (max-width: 980px) {
+  .rtp-grid {
+    grid-template-columns: 1fr;
+  }
 }

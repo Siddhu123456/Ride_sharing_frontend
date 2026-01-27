@@ -1,0 +1,11 @@
+.driver-docs {
+  padding: 32px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.driver-docs h2 {
+  font-size: 1.5rem;
+  margin-bottom: 24px;
+  color: var(--text-main);
+}

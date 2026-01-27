@@ -1,0 +1,20 @@
+.offer-card {
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  background: var(--bg-main);
+  margin-bottom: 16px;
+}
+
+.offer-actions {
+  margin-top: 12px;
+}
+
+.offer-actions button {
+  margin-right: 10px;
+}
+
+.offer-actions .danger {
+  background: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-text);
+}

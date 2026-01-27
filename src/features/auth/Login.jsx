@@ -33,20 +33,29 @@ const Login = () => {
   // ✅ UPDATED: Role Selection Navigation
   const handleRoleSelect = async (role) => {
     if (user && user.user_id) {
+      // 1. Call the API to get the token for the specific role
       const result = await dispatch(selectRole({ user_id: user.user_id, role }));
 
       if (selectRole.fulfilled.match(result)) {
-        // ✅ If Rider -> go to RiderTripsPage
+        // DEBUG: Open your browser console (F12) and see what prints here
+        console.log("Selected Role Value:", role); 
+
+        // 2. Exact string matching (Case Sensitive)
         if (role === "RIDER") {
           navigate("/rider/trips");
-        }
-        // ✅ Driver -> can redirect to driver dashboard (future)
+        } 
         else if (role === "DRIVER") {
           navigate("/driver-dashboard");
-        }
-        // ✅ Fleet Owner -> fleet dashboard
+        } 
         else if (role === "FLEET_OWNER") {
-          navigate("/dashboard");
+          navigate("/dashboard"); // This is your Fleet Owner Dashboard
+        } 
+        else if (role === "TENANT_ADMIN") {
+          console.log("Redirecting to Tenant Admin...");
+          navigate("/tenant-admin-dashboard"); // This must match App.jsx
+        }
+        else {
+          console.warn("Unrecognized role:", role);
         }
       }
     }

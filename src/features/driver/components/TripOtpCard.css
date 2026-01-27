@@ -1,0 +1,14 @@
+.otp-card {
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  background: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.otp-card input {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+}

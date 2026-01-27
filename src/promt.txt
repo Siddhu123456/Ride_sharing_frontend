@@ -1,0 +1,326 @@
+🧭 Goal
+
+Build a production-grade Tenant Admin frontend for:
+
+Driver verification
+
+Fleet verification
+
+Vehicle verification
+
+Tenant setup (countries, cities)
+
+that:
+
+Matches previous pages’ theme
+
+Is scalable, maintainable, and consistent
+
+Works cleanly with your existing backend routes
+
+Feels like an internal SaaS admin console (not a demo UI)
+
+1️⃣ Overall Frontend Strategy
+Treat Tenant Admin as a sub-application
+
+Not just pages.
+
+One layout
+
+One navigation
+
+One design language
+
+One interaction pattern reused everywhere
+
+This prevents UI drift as features grow.
+
+2️⃣ Authentication & Role Gate (Critical)
+Before anything else:
+
+Decode JWT after login
+
+Extract:
+
+user_id
+
+tenant_id
+
+roles
+
+Allow access only if:
+
+role contains TENANT_ADMIN
+
+tenant admin is approved (backend already enforces this)
+
+UX rule:
+
+Unauthorized → redirect to 403 / Access Denied
+
+Never partially render admin pages
+
+3️⃣ Layout & Navigation Rules
+Layout structure
+
+Left sidebar (fixed width)
+
+Main content area
+
+No nested layouts inside admin
+
+Sidebar sections
+
+Dashboard (optional summary)
+
+Drivers
+
+Fleets
+
+Vehicles
+
+Tenant Setup
+
+UX rules
+
+Active section must be visually highlighted
+
+Sidebar must not reload between page changes
+
+Keep navigation depth max 2 levels
+
+4️⃣ Visual Design Principles (Production Look)
+Color & spacing
+
+Neutral background (light gray / off-white)
+
+White cards on top
+
+One primary color for actions
+
+One danger color for reject actions
+
+Typography
+
+1 font family only
+
+3 sizes max:
+
+Page title
+
+Section title
+
+Body text
+
+Spacing
+
+Consistent padding everywhere
+
+Same card spacing across drivers/fleets/vehicles
+
+👉 If spacing is inconsistent, the page instantly looks “student-built”.
+
+5️⃣ Page Types (Standardize These)
+
+You only need 3 page types for everything.
+
+A️⃣ “Pending List” Pages
+
+(Drivers / Fleets / Vehicles)
+
+Purpose
+
+Show what needs attention
+
+Rules
+
+Table layout
+
+One row = one entity
+
+Columns:
+
+ID / Name
+
+Status (badge)
+
+Created date
+
+Row click navigates to details
+
+UX requirements
+
+Empty state (no pending items)
+
+Loading skeleton
+
+No inline actions (keeps table clean)
+
+B️⃣ “Document Review” Pages
+
+(Core of your system)
+
+Purpose
+
+Verify uploaded documents safely
+
+Structure
+
+Entity summary at top
+
+ID
+
+Tenant
+
+Current approval status
+
+Document list (cards or rows)
+
+Verification controls
+
+Document card must show:
+
+Document type
+
+Uploaded preview / link
+
+Verification status
+
+Verified by (if exists)
+
+Verified on (if exists)
+
+Action rules
+
+Approve / Reject per document
+
+Disable buttons after decision
+
+Confirm modal before action
+
+Backend rule mapping (important)
+
+If any doc is verified by another admin → lock page
+
+Show clear error message
+
+Do not allow partial approvals
+
+C️⃣ “Setup / Management” Pages
+
+(Tenant cities, countries)
+
+Purpose
+
+Configuration, not approvals
+
+UX rules
+
+Forms always in modals or separate pages
+
+Bulk actions require preview step
+
+Show success summary after submit
+
+Bulk add cities
+
+Must clearly show:
+
+Created cities
+
+Already mapped cities
+
+Final mapped count
+
+6️⃣ Status Handling (Consistency Is Key)
+
+Use only these states visually:
+
+PENDING → amber/yellow badge
+
+APPROVED → green badge
+
+REJECTED → red badge
+
+Rules:
+
+Never mix text + color inconsistently
+
+Same status must look identical across all pages
+
+7️⃣ Error Handling & Messaging
+Errors you must explicitly handle
+
+403 → Not allowed for this tenant
+
+409 → Another admin already started verification
+
+400 → Missing documents
+
+UX pattern
+
+No raw backend messages
+
+Show friendly message
+
+Keep admin on same page
+
+Example intent:
+
+“Verification already in progress by another tenant admin.”
+
+8️⃣ State Management Guidelines
+What should be global state
+
+Logged-in user
+
+Tenant info
+
+Role info
+
+What should be local state
+
+Document lists
+
+Verification loading state
+
+Modals
+
+Rule
+
+If two pages don’t need the same data → don’t globalize it.
+
+9️⃣ API Interaction Rules
+
+One API layer per feature
+
+UI never calls Axios directly
+
+One request = one responsibility
+
+No chained calls inside components
+
+After approve/reject
+
+Optimistically update UI
+
+Then re-fetch entity status if needed
+
+🔐 10️⃣ Security UX Rules
+
+Never expose tenant_id in URL unless backend checks it
+
+Never trust frontend for role checks
+
+Disable buttons instead of hiding them (clear intent)
+
+🧪 11️⃣ Testing & Validation Checklist
+
+Before calling it “production-ready”:
+
+✔ Login as tenant admin
+✔ Try cross-tenant access (must fail)
+✔ Two admins verify same entity (409 flow)
+✔ Reject one doc → entity must stay pending
+✔ Approve all docs → entity auto-approved
+✔ No pending entities → empty state shown

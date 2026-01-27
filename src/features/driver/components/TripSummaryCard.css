@@ -1,0 +1,6 @@
+.trip-summary {
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  background: var(--bg-main);
+  font-size: 0.95rem;
+}

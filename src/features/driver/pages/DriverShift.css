@@ -1,0 +1,13 @@
+.driver-shift {
+  max-width: 420px;
+  margin: 80px auto;
+  padding: 32px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-main);
+  text-align: center;
+}
+
+.driver-shift button {
+  margin-top: 20px;
+  width: 100%;
+}

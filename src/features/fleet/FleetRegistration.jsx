@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -14,59 +14,83 @@ const FleetRegistration = () => {
   
   const { 
     availableTenants, 
-    hasExistingFleet, // This becomes TRUE when registration succeeds
+    hasExistingFleet, 
     loading, 
     error 
   } = useSelector((state) => state.fleet);
+  const { roles } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({ tenant_id: '', fleet_name: '' });
 
-  // 1. Auth Check on Load
+  // ✅ 1. Role Guard: If Tenant Admin, stop fleet logic immediately
+  const isTenantAdmin = useMemo(() => roles?.includes("TENANT_ADMIN"), [roles]);
+
   useEffect(() => {
+    if (isTenantAdmin) return;
+
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
     } else {
-      // Check if user already has a fleet
       dispatch(checkFleetStatus());
     }
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, isTenantAdmin]);
 
-  // 2. ✅ AUTOMATIC NAVIGATION
-  // As soon as 'applyForFleet' succeeds, 'hasExistingFleet' becomes true in Redux.
-  // This useEffect catches that change and moves the user to the Dashboard.
   useEffect(() => {
-    if (hasExistingFleet === true) {
+    if (!isTenantAdmin && hasExistingFleet === true && window.location.pathname === '/fleet-registration') {
       navigate('/dashboard'); 
     }
-  }, [hasExistingFleet, navigate]);
+  }, [hasExistingFleet, navigate, isTenantAdmin]);
 
-  // 3. Load Tenants only if user has NO fleet yet
   useEffect(() => {
-    if (hasExistingFleet === false) {
+    // If hasExistingFleet is false, it means we definitely don't have one, so load tenants
+    if (!isTenantAdmin && hasExistingFleet === false) {
       dispatch(fetchFleetTenants());
     }
-  }, [hasExistingFleet, dispatch]);
+  }, [hasExistingFleet, dispatch, isTenantAdmin]);
 
   const handleApply = async (e) => {
     e.preventDefault();
-    // Dispatch the API call
-    await dispatch(applyForFleet({
-      tenantId: formData.tenant_id,
-      fleetName: formData.fleet_name
-    }));
-    // Note: We don't need to navigate() here manually. 
-    // The Redux state change will trigger the useEffect #2 above.
+
+    // ✅ VALIDATION: Prevent sending empty/invalid data (Stops 422 errors)
+    if (!formData.tenant_id || formData.tenant_id === "") {
+      alert("Please select an operating city.");
+      return;
+    }
+
+    const tenantIdNum = parseInt(formData.tenant_id, 10);
+    if (isNaN(tenantIdNum)) {
+      alert("Invalid City selection.");
+      return;
+    }
+
+    // ✅ PREPARE PAYLOAD: Exactly matching Python Pydantic Schema
+    const payload = {
+      tenant_id: tenantIdNum,
+      fleet_name: formData.fleet_name.trim()
+    };
+
+    console.log("Sending Application Payload:", payload);
+    
+    // ✅ DISPATCH
+    dispatch(applyForFleet(payload));
   };
 
-  // Show loader while checking /me status
+  if (isTenantAdmin) return null;
+
   if (loading && hasExistingFleet === null) {
-    return <div className="rydo-layout"><div className="form-pane">Checking Account Status...</div></div>;
+    return (
+      <div className="rydo-layout">
+        <div className="form-pane">
+          <div className="rydo-spinner"></div>
+          <p>Verifying Account Status...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="rydo-layout">
-      {/* Left Visual Pane */}
       <div className="nyc-visual-pane" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=2560&auto=format&fit=crop)'}}>
         <div className="hero-content">
           <h1 className="brand-logo">Rydo<span className="brand-badge">FLEET</span></h1>
@@ -74,16 +98,19 @@ const FleetRegistration = () => {
         </div>
       </div>
 
-      {/* Right Form Pane */}
       <div className="form-pane">
         <div className="form-content-box">
-          
           <header className="form-intro">
             <h2>Partner Application</h2>
             <p>Start your journey as a Fleet Owner.</p>
           </header>
 
-          {error && <div className="auth-alert error">{error}</div>}
+          {/* ✅ ERROR DISPLAY: Handle both strings and FastAPI error objects */}
+          {error && (
+            <div className="auth-alert error">
+              {typeof error === 'string' ? error : JSON.stringify(error)}
+            </div>
+          )}
 
           <form onSubmit={handleApply} className="registration-form">
             <div className="form-row">
@@ -94,14 +121,14 @@ const FleetRegistration = () => {
                 required
               >
                 <option value="">Select City...</option>
-                {availableTenants.length > 0 ? (
+                {availableTenants && availableTenants.length > 0 ? (
                   availableTenants.map(t => (
                     <option key={t.tenant_id} value={t.tenant_id}>
                       {t.name} ({t.default_currency})
                     </option>
                   ))
                 ) : (
-                  <option disabled>No cities available</option>
+                  <option disabled>Loading cities...</option>
                 )}
               </select>
             </div>
@@ -118,10 +145,9 @@ const FleetRegistration = () => {
             </div>
 
             <button type="submit" className="rydo-submit-btn" disabled={loading}>
-              {loading ? 'Creating Account...' : 'Submit Application'}
+              {loading ? 'Processing...' : 'Submit Application'}
             </button>
           </form>
-
         </div>
       </div>
     </div>
