@@ -1,20 +1,313 @@
+/* OfferCard.css */
+
 .offer-card {
-  border: 1px solid var(--border-color);
-  padding: 16px;
   background: var(--bg-main);
-  margin-bottom: 16px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Timer Header */
+.offer-timer {
+  padding: 16px 20px;
+  background: var(--bg-input);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.offer-timer.warning {
+  background: #fffbeb;
+  border-bottom-color: #f59e0b;
+}
+
+.offer-timer.urgent {
+  background: var(--error-bg);
+  border-bottom-color: var(--error-text);
+  animation: pulse-bg 1s ease-in-out infinite;
+}
+
+@keyframes pulse-bg {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.timer-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.offer-timer.warning .timer-icon {
+  color: #f59e0b;
+}
+
+.offer-timer.urgent .timer-icon {
+  color: var(--error-text);
+}
+
+.timer-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.offer-timer.urgent .timer-text {
+  color: var(--error-text);
+}
+
+.timer-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.timer-fill {
+  height: 100%;
+  background: var(--rydo-black);
+  transition: width 1s linear;
+}
+
+.offer-timer.warning .timer-fill {
+  background: #f59e0b;
+}
+
+.offer-timer.urgent .timer-fill {
+  background: var(--error-text);
+}
+
+/* Trip Details */
+.offer-details {
+  padding: 24px 20px;
+}
+
+/* Location Section */
+.location-section {
+  margin-bottom: 24px;
+}
+
+.location-item {
+  display: flex;
+  gap: 12px;
+  position: relative;
+}
+
+.location-dot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: 6px;
+  border: 2px solid var(--text-muted);
+}
+
+.location-item.pickup .location-dot {
+  background: var(--rydo-black);
+  border-color: var(--rydo-black);
+}
+
+.location-item.dropoff .location-dot {
+  background: var(--bg-main);
+  border-color: var(--text-muted);
+}
+
+.location-connector {
+  width: 2px;
+  height: 20px;
+  background: var(--border-color);
+  margin-left: 5px;
+  margin-top: -2px;
+  margin-bottom: -2px;
+}
+
+.location-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.location-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.location-address {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-main);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Trip Stats */
+.trip-stats {
+  display: flex;
+  gap: 20px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+}
+
+.stat-item svg {
+  flex-shrink: 0;
+}
+
+.stat-item span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+/* Fare */
+.offer-fare {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fare-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.fare-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--rydo-black);
+  letter-spacing: -0.02em;
+}
+
+/* Actions */
 .offer-actions {
-  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 12px;
+  padding: 20px;
+  background: var(--bg-input);
+  border-top: 1px solid var(--border-color);
 }
 
 .offer-actions button {
-  margin-right: 10px;
+  padding: 14px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.offer-actions .danger {
-  background: var(--error-bg);
-  color: var(--error-text);
-  border: 1px solid var(--error-text);
+.reject-btn {
+  background: var(--bg-main);
+  color: var(--text-main);
+  border: 2px solid var(--border-color);
+}
+
+.reject-btn:hover:not(:disabled) {
+  background: var(--bg-input);
+  border-color: var(--text-main);
+}
+
+.accept-btn {
+  background: var(--rydo-black);
+  color: var(--rydo-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.accept-btn:hover:not(:disabled) {
+  background: #1a1a1a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.offer-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-spinner-small {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .offer-details {
+    padding: 20px 16px;
+  }
+
+  .trip-stats {
+    gap: 16px;
+  }
+
+  .stat-item {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .offer-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .fare-amount {
+    font-size: 1.25rem;
+  }
 }

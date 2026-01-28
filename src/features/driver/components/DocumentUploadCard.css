@@ -1,28 +1,202 @@
+/* DocumentUploadCard.css */
+
 .doc-card {
-  border: 1px solid var(--border-color);
-  padding: 16px;
-  margin-bottom: 16px;
+  display: flex;
+  gap: 16px;
+  padding: 24px;
   background: var(--bg-main);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.doc-card.empty:hover {
+  border-color: var(--rydo-black);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.doc-card.dragging {
+  border-color: var(--rydo-accent);
+  background: rgba(37, 99, 235, 0.02);
+  border-style: dashed;
+}
+
+.doc-card.uploading {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.doc-card.approved {
+  border-color: var(--success-text);
+  background: var(--success-bg);
+  cursor: default;
+}
+
+.doc-card.pending {
+  border-color: #f59e0b;
+  background: #fffbeb;
+  cursor: default;
+}
+
+/* Icon */
+.doc-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-input);
+  color: var(--text-muted);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.doc-card.approved .doc-icon {
+  background: var(--success-text);
+  color: white;
+}
+
+.doc-card.pending .doc-icon {
+  background: #f59e0b;
+  color: white;
+}
+
+.doc-card.empty:hover .doc-icon {
+  background: var(--rydo-black);
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Content */
+.doc-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: center;
 }
 
-.doc-card span {
-  font-weight: 500;
+.doc-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
 }
 
-.doc-card input {
-  padding: 10px;
+.doc-description {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+/* Status Badge */
+.doc-status {
+  margin-top: 8px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge.approved {
+  background: var(--success-text);
+  color: white;
+}
+
+.status-badge.pending {
+  background: #f59e0b;
+  color: white;
+}
+
+/* Upload Progress */
+.upload-progress {
+  margin-top: 8px;
+}
+
+.progress-bar-small {
+  height: 4px;
   background: var(--bg-input);
-  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
 }
 
-.doc-card button {
-  align-self: flex-start;
+.progress-fill-animated {
+  height: 100%;
+  background: var(--rydo-black);
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
 }
 
-.doc-done {
-  color: var(--success-text);
-  font-size: 0.9rem;
+@keyframes progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+    width: 30%;
+  }
+  50% {
+    transform: translateX(50%);
+    width: 40%;
+  }
+  100% {
+    transform: translateX(200%);
+    width: 30%;
+  }
+}
+
+/* Upload Prompt */
+.upload-prompt {
+  margin-top: 8px;
+}
+
+.upload-text {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+
+.upload-subtext {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Hover Effect for Empty Cards */
+.doc-card.empty:hover .upload-text {
+  color: var(--rydo-black);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .doc-card {
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+  }
+
+  .doc-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .doc-title {
+    font-size: 0.9375rem;
+  }
+
+  .doc-description {
+    font-size: 0.8125rem;
+  }
 }
