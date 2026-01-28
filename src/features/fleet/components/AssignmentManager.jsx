@@ -8,14 +8,35 @@ import {
 } from "../../../store/fleetSlice";
 import "./AssignmentManager.css";
 
+/* ===================== HELPERS ===================== */
+// Convert "HH:mm" → ISO TIMESTAMPTZ for today
+const timeToTodayISO = (timeHHmm) => {
+  const [hours, minutes] = timeHHmm.split(":").map(Number);
+  const now = new Date();
+  now.setHours(hours, minutes, 0, 0);
+  return now.toISOString();
+};
+
+const getNowTime = () => new Date().toTimeString().slice(0, 5); // HH:mm
+
 const AssignmentManager = ({ fleetId }) => {
   const dispatch = useDispatch();
-  const { vehicles = [], availableDrivers = [], loading = false, error, successMsg } =
-    useSelector((state) => state.fleet);
+  const {
+    vehicles = [],
+    availableDrivers = [],
+    loading = false,
+    error,
+    successMsg,
+  } = useSelector((state) => state.fleet);
 
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedDriverId, setSelectedDriverId] = useState("");
-  const [startTime, setStartTime] = useState(new Date().toISOString().slice(0, 16));
+
+  // ✅ TIME ONLY (daily recurring)
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("18:00");
+
+
 
   useEffect(() => {
     if (fleetId) dispatch(fetchFleetVehicles(fleetId));
@@ -26,7 +47,9 @@ const AssignmentManager = ({ fleetId }) => {
   }, [dispatch]);
 
   const approvedVehicles = useMemo(() => {
-    return vehicles.filter((v) => v.approval_status === "APPROVED" && v.status === "ACTIVE");
+    return vehicles.filter(
+      (v) => v.approval_status === "APPROVED" && v.status === "ACTIVE"
+    );
   }, [vehicles]);
 
   const handleVehicleSelect = (v) => {
@@ -45,8 +68,10 @@ const AssignmentManager = ({ fleetId }) => {
         payload: {
           vehicle_id: selectedVehicle.vehicle_id,
           driver_id: Number(selectedDriverId),
-          start_time: new Date(startTime).toISOString(),
-          end_time: null,
+
+          // ✅ convert TIME → TIMESTAMPTZ
+          start_time: startTime,
+          end_time: endTime, // daily recurring until updated by fleet owner
         },
       })
     );
@@ -80,7 +105,8 @@ const AssignmentManager = ({ fleetId }) => {
             {approvedVehicles.map((v) => (
               <div
                 key={v.vehicle_id}
-                className={`am-item ${selectedVehicle?.vehicle_id === v.vehicle_id ? "active" : ""}`}
+                className={`am-item ${selectedVehicle?.vehicle_id === v.vehicle_id ? "active" : ""
+                  }`}
                 onClick={() => handleVehicleSelect(v)}
                 role="button"
                 tabIndex={0}
@@ -109,10 +135,12 @@ const AssignmentManager = ({ fleetId }) => {
             <form onSubmit={handleAssign} className="am-assignment-form">
               <div className="am-context-box">
                 <span>
-                  Vehicle: <strong>{selectedVehicle.registration_no}</strong>
+                  Vehicle:{" "}
+                  <strong>{selectedVehicle.registration_no}</strong>
                 </span>
                 <span>
-                  Requirement: <strong>{selectedVehicle.category} Driver</strong>
+                  Requirement:{" "}
+                  <strong>{selectedVehicle.category} Driver</strong>
                 </span>
               </div>
 
@@ -135,28 +163,50 @@ const AssignmentManager = ({ fleetId }) => {
                 </select>
 
                 {availableDrivers.length === 0 && !loading && (
-                  <p className="am-error-text">No available drivers matched for this category.</p>
+                  <p className="am-error-text">
+                    No available drivers matched for this category.
+                  </p>
                 )}
               </div>
 
+              {/* ✅ TIME ONLY */}
               <div className="am-field">
                 <label>Deployment Start Time</label>
                 <input
-                  type="datetime-local"
+                  type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
                   required
                 />
               </div>
 
-              <button type="submit" className="am-submit-btn" disabled={!selectedDriverId || loading}>
+              <div className="am-field">
+                <label>Deployment End Time</label>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  required
+                />
+              </div>
+
+
+
+              <button
+                type="submit"
+                className="am-submit-btn"
+                disabled={!selectedDriverId || loading}
+              >
                 {loading ? "Processing..." : "Confirm Dispatch"}
               </button>
             </form>
           ) : (
             <div className="am-placeholder-state">
               <div className="am-icon-circle">🔑</div>
-              <p>Select a vehicle from the roster to see available drivers for deployment.</p>
+              <p>
+                Select a vehicle from the roster to see available drivers for
+                deployment.
+              </p>
             </div>
           )}
         </div>
