@@ -2,14 +2,21 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import "./TripNavigation.css";
 
+import { completeTrip } from "../../../store/driverSlice";
+
 const TripNavigation = ({ trip }) => {
   const dispatch = useDispatch();
   const [isCompleting, setIsCompleting] = useState(false);
 
   const handleCompleteTrip = async () => {
     setIsCompleting(true);
-    // Add your complete trip action here
-    // await dispatch(completeTrip(trip.trip_id));
+    try {
+      await dispatch(completeTrip(trip.trip_id)).unwrap();
+    } catch (err) {
+      alert(err || "Failed to complete trip");
+    } finally {
+      setIsCompleting(false);
+    }
   };
 
   const handleEmergency = () => {

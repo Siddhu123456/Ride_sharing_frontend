@@ -19,10 +19,15 @@ const DriverTrip = ({ trip }) => {
       {/* Main Content */}
       <div className="trip-content">
         <TripSummaryCard trip={trip} />
-        
-        {trip.status === "ACCEPTED" && <TripOtpCard tripId={trip.trip_id} />}
-        
-        {trip.status === "IN_PROGRESS" && <TripNavigation trip={trip} />}
+
+        {trip.status === "ASSIGNED" && (
+          <TripOtpCard tripId={trip.trip_id} />
+        )}
+
+        {trip.status === "PICKED_UP" && (
+          <TripNavigation trip={trip} />
+        )}
+
       </div>
     </div>
   );

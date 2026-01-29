@@ -9,10 +9,23 @@ const DriverOffers = () => {
   const dispatch = useDispatch();
   const { offers, loading, shift } = useSelector((s) => s.driver);
   const [respondingTo, setRespondingTo] = useState(null);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
+    // Only poll if driver is ONLINE
     if (shift?.status === "ONLINE") {
-      dispatch(fetchOffers());
+      // Initial fetch
+      const fetchInitialOffers = async () => {
+        try {
+          await dispatch(fetchOffers()).unwrap();
+        } catch (error) {
+          console.error("Error fetching offers:", error);
+        } finally {
+          setInitialLoad(false);
+        }
+      };
+
+      fetchInitialOffers();
       
       // Poll for new offers every 5 seconds
       const interval = setInterval(() => {
@@ -20,6 +33,8 @@ const DriverOffers = () => {
       }, 5000);
 
       return () => clearInterval(interval);
+    } else {
+      setInitialLoad(false);
     }
   }, [dispatch, shift?.status]);
 
@@ -27,7 +42,11 @@ const DriverOffers = () => {
     setRespondingTo(attemptId);
     try {
       await dispatch(respondOffer({ attemptId, accept: true })).unwrap();
-      await dispatch(fetchOffers());
+      // Refresh offers after accepting
+      await dispatch(fetchOffers()).unwrap();
+    } catch (error) {
+      console.error("Error accepting offer:", error);
+      alert(error?.message || "Failed to accept offer. Please try again.");
     } finally {
       setRespondingTo(null);
     }
@@ -37,14 +56,19 @@ const DriverOffers = () => {
     setRespondingTo(attemptId);
     try {
       await dispatch(respondOffer({ attemptId, accept: false })).unwrap();
-      await dispatch(fetchOffers());
+      // Refresh offers after rejecting
+      await dispatch(fetchOffers()).unwrap();
+    } catch (error) {
+      console.error("Error rejecting offer:", error);
+      alert(error?.message || "Failed to reject offer. Please try again.");
     } finally {
       setRespondingTo(null);
     }
   };
 
-  if (loading && offers.length === 0) {
-    return <LoadingScreen message="Searching for trips..." />;
+  // Show loading only on initial load
+  if (initialLoad && loading) {
+    return <LoadingScreen message="Loading trip offers..." />;
   }
 
   return (
@@ -56,9 +80,9 @@ const DriverOffers = () => {
           <span className="status-text">Online & Ready</span>
         </div>
         <div className="offers-count">
-          {offers.length > 0 ? (
+          {offers.length > 0 && (
             <span className="count-badge">{offers.length}</span>
-          ) : null}
+          )}
         </div>
       </div>
 

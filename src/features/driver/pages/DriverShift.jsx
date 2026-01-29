@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { startShift, endShift } from "../../../store/driverSlice";
+import { startShift, endShift, updateLocation } from "../../../store/driverSlice";
 import "./DriverShift.css";
 
 const DriverShift = () => {
@@ -12,9 +12,10 @@ const DriverShift = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
 
-  // Get current location on mount
+  // Get current location on mount and every 30 seconds when online
   useEffect(() => {
     if (navigator.geolocation) {
+      // Initial location fetch
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setCurrentLocation({
@@ -24,13 +25,41 @@ const DriverShift = () => {
           setLocationError(null);
         },
         (error) => {
-          setLocationError("Location access required to start shift");
+          setLocationError("Location access required to manage shift");
         }
       );
+
+      // Update location every 30 seconds if online
+      let locationInterval;
+      if (shift?.status === "ONLINE") {
+        locationInterval = setInterval(() => {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const locationData = {
+                driver_id: user.user_id,
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+              };
+              
+              // Send location update to backend
+              dispatch(updateLocation(locationData));
+            },
+            (error) => {
+              console.error("Location update error:", error);
+            }
+          );
+        }, 30000); // 30 seconds
+      }
+
+      return () => {
+        if (locationInterval) {
+          clearInterval(locationInterval);
+        }
+      };
     } else {
       setLocationError("Geolocation not supported by your browser");
     }
-  }, []);
+  }, [shift?.status, dispatch, user?.user_id]);
 
   const goOnline = async () => {
     if (!navigator.geolocation) {
@@ -47,13 +76,13 @@ const DriverShift = () => {
           await dispatch(
             startShift({
               driver_id: user.user_id,
-              tenant_id: 1,
+              tenant_id: user.tenant_id || 1, // Use user's tenant_id
               latitude: pos.coords.latitude,
               longitude: pos.coords.longitude,
             })
           ).unwrap();
         } catch (error) {
-          setLocationError("Failed to start shift. Please try again.");
+          setLocationError(error || "Failed to start shift. Please try again.");
         } finally {
           setIsProcessing(false);
         }
@@ -75,7 +104,7 @@ const DriverShift = () => {
     try {
       await dispatch(endShift({ driver_id: user.user_id })).unwrap();
     } catch (error) {
-      setLocationError("Failed to end shift. Please try again.");
+      setLocationError(error || "Failed to end shift. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -174,6 +203,7 @@ const DriverShift = () => {
           <ul>
             <li>Toggle online to start receiving trip requests</li>
             <li>Accept trips that work for your schedule</li>
+            <li>Location is tracked while online for trip matching</li>
             <li>Go offline anytime to stop receiving requests</li>
           </ul>
         </div>
@@ -182,4 +212,4 @@ const DriverShift = () => {
   );
 };
 
-export default DriverShift;
+export default DriverShift; 
