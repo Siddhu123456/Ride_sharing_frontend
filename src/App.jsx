@@ -9,8 +9,8 @@ import Home from "./features/rider/pages/Home.jsx";
 import BookRide from "./features/rider/components/BookRide.jsx";
 import TripTracking from "./features/rider/components/TripTracking.jsx";
 
-// /* Driver */
-// import DriverDashboard from "./features/driver/pages/DriverDashboard.jsx";
+/* Driver */
+import DriverDashboard from "./features/driver/pages/DriverDashboard.jsx";
 
 /* Admin */
 import AdminLayout from "./features/admin/AdminLayout.jsx";
@@ -42,9 +42,9 @@ function App() {
       </Route>
 
 
-      {/* ================= DRIVER =================
+      {/* ================= DRIVER ================= */}
       <Route path="/driver" element={<DriverDashboard />} />
-      <Route path="/driver-dashboard" element={<Navigate to="/driver" replace />} /> */}
+      <Route path="/driver-dashboard" element={<Navigate to="/driver" replace />} />
 
       {/* ================= FLEET ================= */}
       <Route path="/fleet-registration" element={<FleetRegistration />} />

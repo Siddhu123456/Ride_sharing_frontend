@@ -38,8 +38,10 @@ const FareDiscovery = () => {
     dispatch(fetchFareEstimates({
       pickup_lat: pickup.lat,
       pickup_lng: pickup.lng,
+      pickup_address: pickup.address,
       drop_lat: drop.lat,
       drop_lng: drop.lng,
+      drop_address: drop.address,
       vehicle_category: selectedCategory,
     }));
   };

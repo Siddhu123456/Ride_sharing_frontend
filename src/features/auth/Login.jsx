@@ -42,7 +42,7 @@ const Login = () => {
 
         // 2. Exact string matching (Case Sensitive)
         if (role === "RIDER") {
-          navigate("/rider/trips");
+          navigate("/rider/home");
         } 
         else if (role === "DRIVER") {
           navigate("/driver-dashboard");

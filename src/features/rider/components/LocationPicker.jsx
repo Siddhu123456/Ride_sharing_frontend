@@ -9,6 +9,7 @@ import {
 import L from 'leaflet';
 import { MapPin, Navigation } from 'lucide-react';
 import { setPickupLocation, setDropLocation } from '../../../store/locationSlice';
+import { setPickupLocationAddress, setDropLocationAddress } from '../../../store/fareSlice'
 import { useGeolocation } from '../../../hooks/useGeolocation';
 import 'leaflet/dist/leaflet.css';
 import './LocationPicker.css';
@@ -64,9 +65,11 @@ const LocationPicker = ({ onLocationsSet }) => {
       dispatch(setPickupLocation({ lat, lng, address }));
       setPickupAddress(address);
       setActiveMarker('drop');
+      setPickupLocationAddress(address);
     } else {
       dispatch(setDropLocation({ lat, lng, address }));
       setDropAddress(address);
+      setDropLocationAddress(address);
     }
   };
 
