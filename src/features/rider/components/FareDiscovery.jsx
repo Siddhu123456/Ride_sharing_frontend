@@ -2,7 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Car, Clock, MapPin, ChevronRight, Loader } from 'lucide-react';
-import { fetchFareEstimates, selectTenant, setVehicleCategory } from '../../../store/fareSlice';
+import {
+  fetchFareEstimates,
+  selectTenant,
+  setVehicleCategory
+} from '../../../store/fareSlice';
 import './FareDiscovery.css';
 
 const VEHICLE_CATEGORIES = [
@@ -14,25 +18,26 @@ const VEHICLE_CATEGORIES = [
 const FareDiscovery = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   const { pickup, drop } = useSelector((state) => state.location);
+
   const {
     estimates,
     pickupAddress,
     dropAddress,
     distanceKm,
     vehicleCategory,
-    isLoading,
+    loading,
     error,
   } = useSelector((state) => state.fare);
 
-  const [selectedCategory, setSelectedCategory] = useState('CAB');
+  const [selectedCategory, setSelectedCategory] = useState(vehicleCategory);
 
   useEffect(() => {
     if (pickup.lat && drop.lat) {
       loadFares();
     }
-  }, [pickup, drop, selectedCategory]);
+  }, [pickup, drop]);
 
   const loadFares = () => {
     dispatch(fetchFareEstimates({
@@ -42,7 +47,6 @@ const FareDiscovery = () => {
       drop_lat: drop.lat,
       drop_lng: drop.lng,
       drop_address: drop.address,
-      vehicle_category: selectedCategory,
     }));
   };
 
@@ -51,28 +55,34 @@ const FareDiscovery = () => {
     dispatch(setVehicleCategory(category));
   };
 
-  const handleSelectTenant = (tenant) => {
-    dispatch(selectTenant(tenant));
+  const handleSelectTenant = (estimate) => {
+    dispatch(selectTenant(estimate));
     navigate('/rider/book');
   };
 
-  const formatFare = (fare) => {
-    return `₹${fare.toFixed(2)}`;
-  };
+  const formatFare = (fare) => `₹${fare.toFixed(2)}`;
+
+  // 🔥 frontend filter by selected vehicle
+  const filteredEstimates = estimates.filter(
+    (e) => e.vehicle_category === selectedCategory
+  );
 
   return (
     <div className="fare-discovery">
       <div className="fare-discovery-header">
         <h2>Available Rides</h2>
+
         <div className="route-info">
           <div className="route-item">
             <MapPin className="icon pickup-icon" size={16} />
             <span>{pickupAddress || 'Pickup location'}</span>
           </div>
+
           <div className="route-item">
             <MapPin className="icon drop-icon" size={16} />
             <span>{dropAddress || 'Drop location'}</span>
           </div>
+
           <div className="distance-info">
             <span className="distance">{distanceKm.toFixed(1)} km</span>
           </div>
@@ -83,7 +93,9 @@ const FareDiscovery = () => {
         {VEHICLE_CATEGORIES.map((category) => (
           <button
             key={category.value}
-            className={`category-btn ${selectedCategory === category.value ? 'active' : ''}`}
+            className={`category-btn ${
+              selectedCategory === category.value ? 'active' : ''
+            }`}
             onClick={() => handleCategoryChange(category.value)}
           >
             <span className="category-icon">{category.icon}</span>
@@ -93,7 +105,7 @@ const FareDiscovery = () => {
       </div>
 
       <div className="estimates-container">
-        {isLoading && (
+        {loading && (
           <div className="loading-state">
             <Loader className="spinner" size={40} />
             <p>Finding best fares...</p>
@@ -103,42 +115,51 @@ const FareDiscovery = () => {
         {error && (
           <div className="error-state">
             <p className="error-message">{error}</p>
-            <button onClick={loadFares} className="retry-btn">Retry</button>
+            <button onClick={loadFares} className="retry-btn">
+              Retry
+            </button>
           </div>
         )}
 
-        {!isLoading && !error && estimates.length === 0 && (
+        {!loading && !error && filteredEstimates.length === 0 && (
           <div className="empty-state">
             <Car size={48} />
-            <p>No rides available for this route</p>
+            <p>No {selectedCategory} rides available nearby</p>
           </div>
-// /* Driver */
-// import DriverDashboard from "./features/driver/pages/DriverDashboard.jsx";
         )}
 
-        {!isLoading && estimates.length > 0 && (
+        {!loading && filteredEstimates.length > 0 && (
           <div className="estimates-list">
             <div className="list-header">
               <span className="sort-label">Sorted by price</span>
             </div>
-            {estimates.map((estimate) => (
+
+            {filteredEstimates.map((estimate) => (
               <div
-                key={estimate.tenant_id}
+                key={`${estimate.tenant_id}-${estimate.vehicle_category}`}
                 className="estimate-card"
                 onClick={() => handleSelectTenant(estimate)}
               >
                 <div className="estimate-info">
-                  <div className="tenant-name">{estimate.tenant_name}</div>
+                  <div className="tenant-name">
+                    {estimate.tenant_name}
+                  </div>
+
                   <div className="estimate-details">
                     <Car className="icon" size={16} />
-                    <span>{selectedCategory}</span>
+                    <span>{estimate.vehicle_category}</span>
                     <span className="separator">•</span>
                     <Clock className="icon" size={16} />
-                    <span>2-5 mins away</span>
+                    <span>
+                      {estimate.available_drivers} drivers nearby
+                    </span>
                   </div>
                 </div>
+
                 <div className="estimate-price">
-                  <div className="fare">{formatFare(estimate.fare)}</div>
+                  <div className="fare">
+                    {formatFare(estimate.fare)}
+                  </div>
                   <ChevronRight className="arrow-icon" size={20} />
                 </div>
               </div>

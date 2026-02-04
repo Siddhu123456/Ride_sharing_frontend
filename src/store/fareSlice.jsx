@@ -53,13 +53,17 @@ export const fetchFareEstimates = createAsyncThunk(
 
 const fareSlice = createSlice({
   name: "fare",
+
   initialState: {
     estimates: [],
     cityId: null,
     pickupAddress: "",
     dropAddress: "",
     distanceKm: 0,
+
+    // UI filter only (backend no longer accepts this)
     vehicleCategory: "CAB",
+
     selectedTenant: null,
     loading: false,
     error: null,
@@ -75,11 +79,11 @@ const fareSlice = createSlice({
     },
 
     setPickupLocationAddress: (state, action) => {
-        state.pickupAddress = action.payload
+      state.pickupAddress = action.payload;
     },
 
     setDropLocationAddress: (state, action) => {
-        state.dropAddress = action.payload
+      state.dropAddress = action.payload;
     },
 
     resetFareState: () => ({
@@ -101,18 +105,24 @@ const fareSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
+
       .addCase(fetchFareEstimates.fulfilled, (state, action) => {
         state.loading = false;
-        state.estimates = action.payload.estimates || [];
+
+        // 🔥 keep only vehicles with active drivers
+        state.estimates = (action.payload.estimates || []).filter(
+          (e) => e.available_drivers > 0
+        );
+
         state.cityId = action.payload.city_id;
         state.pickupAddress = action.payload.pickup_address;
         state.dropAddress = action.payload.drop_address;
         state.distanceKm = action.payload.distance_km;
-        state.vehicleCategory = action.payload.vehicle_category;
 
-        // Auto-sort by price
+        // auto-sort by fare
         state.estimates.sort((a, b) => a.fare - b.fare);
       })
+
       .addCase(fetchFareEstimates.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
@@ -125,7 +135,7 @@ export const {
   selectTenant,
   resetFareState,
   setPickupLocationAddress,
-  setDropLocationAddress
+  setDropLocationAddress,
 } = fareSlice.actions;
 
 export default fareSlice.reducer;
